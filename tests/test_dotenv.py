@@ -1,5 +1,6 @@
 import os
 import unittest
+from pathlib import Path
 
 import support
 from voice_personas.app.container import build_app
@@ -58,7 +59,7 @@ class LoadTest(support.TempHomeTest):
     def test_home_from_plugin_env_with_tilde(self):
         self.write(self.plugin / ".env", "VOICE_PERSONAS_HOME=~/vp-test-home\n")
         result = load_environment({}, self.plugin)
-        self.assertEqual(result.env["VOICE_PERSONAS_HOME"], os.path.expanduser("~/vp-test-home"))
+        self.assertEqual(Path(result.env["VOICE_PERSONAS_HOME"]), Path.home() / "vp-test-home")
 
     def test_missing_files_are_fine(self):
         result = load_environment({"X": "1"}, self.plugin)
