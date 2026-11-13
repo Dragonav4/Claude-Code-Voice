@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Hook Notification: голосом сказать, что Claude ждёт разрешения или ввода."""
+"""Notification hook: say out loud that Claude waits for permission or input."""
+
 import sys
 from pathlib import Path
 

@@ -1,14 +1,15 @@
-"""PostToolUse и Stop: найти новые реплики <speak> и отправить их в очередь озвучки."""
+"""PostToolUse and Stop: find new <speak> lines and queue them for speech."""
+
 import time
 from pathlib import Path
 
 from ..domain import find_speak_lines, select_new
 
-STOP_RETRY_DELAY_S = 0.4  # финальное сообщение иногда ещё не дописано в транскрипт
+STOP_RETRY_DELAY_S = 0.4  # the final message is sometimes not yet in the transcript
 
 
 def collect_new_lines(app, transcript, session):
-    # Stop и PostToolUse могут сработать почти одновременно — не дублируем реплики.
+    # Stop and PostToolUse may fire almost together: never speak a line twice.
     with app.store.lock("collect"):
         lines = find_speak_lines(app.read_transcript(transcript))
         selection = select_new(lines, app.store.load_seen(session))

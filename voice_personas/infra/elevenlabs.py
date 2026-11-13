@@ -1,4 +1,5 @@
-"""Синтез речи через ElevenLabs с кэшем готовых фраз на диске."""
+"""Speech synthesis through ElevenLabs with an on-disk phrase cache."""
+
 import hashlib
 import json
 import os
@@ -19,21 +20,22 @@ class ElevenLabs:
         self._log = log
 
     def audio_file(self, text, voice_id):
-        """mp3 с репликой (из кэша или свежий) или None."""
+        """An mp3 with the line (cached or fresh), or None."""
         if not self._settings.api_key or not voice_id:
-            self._log.write("ElevenLabs skipped: " + ("no api key" if not self._settings.api_key
-                                                      else "no voice_id"))
+            self._log.write(
+                "ElevenLabs skipped: "
+                + ("no api key" if not self._settings.api_key else "no voice_id")
+            )
             return None
         path = self._cache_path(text, voice_id)
         if path.exists():
-            os.utime(path)  # недавно использованное дольше живёт в кэше
+            os.utime(path)  # recently used phrases live longer in the cache
             return path
         audio = self.request(text, voice_id)
         return self._store(path, audio) if audio else None
 
     def request(self, text, voice_id):
-        url = (API_URL + urllib.parse.quote(voice_id, safe="")
-               + f"?output_format={OUTPUT_FORMAT}")
+        url = API_URL + urllib.parse.quote(voice_id, safe="") + f"?output_format={OUTPUT_FORMAT}"
         request = urllib.request.Request(
             url,
             data=json.dumps({"text": text, "model_id": self._settings.model_id}).encode("utf-8"),
@@ -51,7 +53,7 @@ class ElevenLabs:
         return None
 
     def _cache_path(self, text, voice_id):
-        key = f"{voice_id}\n{self._settings.model_id}\n{text}".encode("utf-8")
+        key = f"{voice_id}\n{self._settings.model_id}\n{text}".encode()
         return self._cache_dir / f"{hashlib.sha256(key).hexdigest()[:32]}.mp3"
 
     def _store(self, path, audio):
@@ -67,7 +69,7 @@ class ElevenLabs:
         return path
 
     def prune_cache(self):
-        """Удаляет самые старые фразы, пока кэш не влезет в лимит."""
+        """Deletes the oldest phrases until the cache fits the limit."""
         try:
             files = sorted(self._cache_dir.glob("*.mp3"), key=lambda p: p.stat().st_mtime)
             total = sum(p.stat().st_size for p in files)

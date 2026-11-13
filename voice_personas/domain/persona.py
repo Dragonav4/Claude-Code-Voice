@@ -1,25 +1,29 @@
-"""Персона: тон ответов, голос и фразы уведомлений."""
+"""Persona: reply tone, voice and notification phrases."""
+
 import re
 from dataclasses import dataclass, field
 from types import MappingProxyType
 
 FRONTMATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n?(.*)\Z", re.S)
 
-DEFAULT_PHRASES = MappingProxyType({
-    "permission": "Нужно твоё разрешение.",
-    "idle": "Я закончил и жду тебя.",
-})
+DEFAULT_PHRASES = MappingProxyType(
+    {
+        "permission": "Нужно твоё разрешение.",
+        "idle": "Я закончил и жду тебя.",
+    }
+)
 
 SPEAK_RULES = """\
 Voice narration (the user hears these lines through text-to-speech):
 - Before a batch of tool calls, and at the very end of every turn, include one short spoken line wrapped in <speak>...</speak> tags, written in the persona's voice.
 - A spoken line is plain sentences only: at most ~25 words, in the same language as the user's latest message, with no code, file paths, URLs, markdown or emoji. Say what you are about to do, or what the outcome is.
 - Put nothing inside <speak> that is not meant to be read aloud.
+- Never write the tag itself anywhere else, not even inside code or when explaining how narration works: a stray opening tag makes the rest of the reply spoken. In prose, call it "the speak tag".
 - Keep the normal written answer complete. The spoken line is an addition, not a replacement."""
 
 
 def _parse_frontmatter(text):
-    """(meta, body). meta — простые строки `key: value`."""
+    """(meta, body). meta holds plain `key: value` lines."""
     match = FRONTMATTER_RE.match(text)
     if not match:
         return {}, text.strip()
@@ -55,7 +59,7 @@ class Persona:
         return self.phrases.get(kind) or DEFAULT_PHRASES[kind]
 
     def context(self, with_voice):
-        """Текст, который hook UserPromptSubmit добавляет в контекст Claude."""
+        """Text the UserPromptSubmit hook adds to Claude's context."""
         parts = [f"[voice-personas] Active persona: {self.name}", self.prompt]
         if with_voice:
             parts.append(SPEAK_RULES)

@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Lint and test (${{ matrix.os }}, Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu, python: "3.10" }
+          - { os: ubuntu, python: "3.14" }
+          - { os: windows, python: "3.14" }
+          - { os: macos, python: "3.14" }
+    defaults:
+      run:
+        shell: bash  # Git Bash on Windows, the same shell Claude Code runs hooks in
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup uv and Python
+        uses: astral-sh/setup-uv@v10.3.3
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Lint
+        run: uvx ruff check .
+
+      - name: Check formatting
+        run: uvx ruff format --check .
+
+      # `uv run` uses UV_PYTHON from setup-uv; a bare `python` would be the runner's own.
+      - name: Show Python version
+        run: uv run --no-project python --version
+
+      - name: Test
+        run: uv run --no-project python -W error::ResourceWarning -m unittest discover -s tests -t tests
+
+      - name: Hook smoke test through the launcher
+        env:
+          VOICE_PERSONAS_HOME: ${{ runner.temp }}/voice-personas
+          VOICE_PERSONAS_DRY_RUN: "1"
+        run: |
+          sh bin/run.sh bin/ctl.py persona warrior
+          # A JSON-safe path: `pwd -W` gives D:/a/... in Git Bash, plain `pwd` elsewhere.
+          dir=$(cd "$RUNNER_TEMP" && { pwd -W 2>/dev/null || pwd; })
+          printf '%s\n' '{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"<speak>Проверка</speak>"}]}}' > "$dir/t.jsonl"
+          out=$(printf '{"session_id":"ci","transcript_path":"%s"}' "$dir/t.jsonl" | sh bin/run.sh bin/on_speak.py)
+          echo "$out"
+          [ "$out" = "[dry-run:warrior] Проверка" ]
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # gitleaks scans every commit of the PR, not only the last one
+
+      - name: Scan for secrets
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

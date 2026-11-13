@@ -1,4 +1,4 @@
-"""Команды /persona и /voice. Каждая возвращает (код выхода, текст для пользователя)."""
+"""/persona and /voice commands. Each returns (exit code, text for the user)."""
 
 TEST_PHRASE = "Проверка связи. Голос на месте."
 VOICE_USAGE = "Используй: /voice on | off | status | stop | test [текст]"
@@ -40,19 +40,21 @@ def status_text(app):
     state = app.store.load_state()
     s = app.settings
     voice_id = s.voice_for(app.personas.get(state.persona))
-    return "\n".join([
-        f"Персона: {state.persona or 'нет'}",
-        f"Озвучка: {'вкл' if state.voice else 'выкл'}",
-        f"ElevenLabs API key: {'найден' if s.api_key else 'НЕ найден'}",
-        f"Voice ID: {voice_id or 'НЕ задан'}",
-        f"Модель: {s.model_id}, скорость {s.rate}, громкость {s.volume}",
-        f"Запасной голос: {s.fallback} ({s.fallback_voice})",
-        f"Обрыв речи новым сообщением: {_yes_no(s.interrupt_on_prompt)}",
-        f"Голосовые уведомления: {_yes_no(s.notifications)}",
-        f"Приглушение Music: {_yes_no(s.duck_music)}",
-        f"Лог ошибок озвучки: {app.paths.log_file}",
-        f"Конфиг: {app.paths.config_file}",
-    ])
+    return "\n".join(
+        [
+            f"Персона: {state.persona or 'нет'}",
+            f"Озвучка: {'вкл' if state.voice else 'выкл'}",
+            f"ElevenLabs API key: {'найден' if s.api_key else 'НЕ найден'}",
+            f"Voice ID: {voice_id or 'НЕ задан'}",
+            f"Модель: {s.model_id}, скорость {s.rate}, громкость {s.volume}",
+            f"Запасной голос: {s.fallback} ({s.fallback_voice or 'по языку реплики'})",
+            f"Обрыв речи новым сообщением: {_yes_no(s.interrupt_on_prompt)}",
+            f"Голосовые уведомления: {_yes_no(s.notifications)}",
+            f"Приглушение Music: {_yes_no(s.duck_music)}",
+            f"Лог ошибок озвучки: {app.paths.log_file}",
+            f"Конфиг: {app.paths.config_file}",
+        ]
+    )
 
 
 def send_test_phrase(app, text):
