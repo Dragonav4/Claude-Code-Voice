@@ -117,7 +117,7 @@ say_idle: Phrase spoken when Claude is waiting for you
 
 ## How it works
 
-1. On every prompt, a `UserPromptSubmit` hook adds the persona and the `<speak>` rule to Claude's context.
+1. At the start of a session (and after `/clear` or compaction) a `SessionStart` hook gives Claude the persona and the narration rules. Later prompts only get a one-line reminder, unless the persona or its settings changed.
 2. After each tool call and at the end of the turn, the `PostToolUse` and `Stop` hooks read the session transcript and collect `<speak>` lines that have not been spoken yet.
 3. A background worker synthesizes each line and plays it. Lines play one at a time and never block Claude.
 4. A new prompt stops the worker.

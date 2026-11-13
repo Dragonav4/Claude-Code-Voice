@@ -59,9 +59,29 @@ class Store:
     def load_config(self):
         return _read_json(self._paths.config_file)
 
+    @staticmethod
+    def _session_name(session):
+        return re.sub(r"[^A-Za-z0-9_-]", "_", session)[:80] or "unknown"
+
     def _spoken_file(self, session):
-        safe = re.sub(r"[^A-Za-z0-9_-]", "_", session)[:80] or "unknown"
-        return self._paths.spoken_dir / f"{safe}.json"
+        return self._paths.spoken_dir / f"{self._session_name(session)}.json"
+
+    def _context_file(self, session):
+        return self._paths.home / "sessions" / f"{self._session_name(session)}.json"
+
+    def load_context_mark(self, session):
+        """Fingerprint of the persona text this session has already received."""
+        mark = _read_json(self._context_file(session)).get("persona")
+        return mark if isinstance(mark, str) else None
+
+    def save_context_mark(self, session, mark):
+        _write_json(self._context_file(session), {"persona": mark})
+
+    def clear_context_mark(self, session):
+        try:
+            self._context_file(session).unlink()
+        except OSError:
+            pass
 
     def load_seen(self, session):
         keys = _read_json(self._spoken_file(session)).get("keys", [])

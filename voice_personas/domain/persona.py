@@ -1,5 +1,6 @@
 """Persona: reply tone, voice and notification phrases."""
 
+import hashlib
 import re
 from dataclasses import dataclass, field
 from types import MappingProxyType
@@ -59,8 +60,20 @@ class Persona:
         return self.phrases.get(kind) or DEFAULT_PHRASES[kind]
 
     def context(self, with_voice):
-        """Text the UserPromptSubmit hook adds to Claude's context."""
+        """The full persona text: sent once per session and after every change."""
         parts = [f"[voice-personas] Active persona: {self.name}", self.prompt]
         if with_voice:
             parts.append(SPEAK_RULES)
         return "\n\n".join(parts)
+
+    def reminder(self, with_voice):
+        """One line for the following prompts: the full text is already in the history."""
+        line = (
+            f"[voice-personas] Persona {self.name} is still active: "
+            "follow its rules from earlier in this conversation."
+        )
+        return line + (" Keep narrating with the speak tag as instructed." if with_voice else "")
+
+    def fingerprint(self, with_voice):
+        """Changes whenever the full text would change: persona, voice or file edits."""
+        return hashlib.sha256(self.context(with_voice).encode("utf-8")).hexdigest()[:16]

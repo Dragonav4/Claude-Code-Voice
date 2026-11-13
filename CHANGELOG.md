@@ -5,6 +5,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- The full persona is sent once per session and after every change, other prompts get a one-line reminder; a SessionStart hook resends it after /clear and compaction (#18).
+
 ## [0.4.0] - 2026-11-13
 
 ### Added
