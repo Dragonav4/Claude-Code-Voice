@@ -9,6 +9,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - Repository conventions, ADRs, Taskfile, CI and issue/PR templates (#1).
 - Secret scanning in CI (gitleaks) and `.gitignore` rules for local state (#5).
+- Linux and Windows support: platform layer for locks, processes, players and system voices; `bin/run.sh` picks a working Python; CI on ubuntu, windows and macos (#4).
+
+### Changed
+
+- The system voice is picked by the language of the line instead of always using Milena (#4).
+
+### Fixed
+
+- CI ran the tests on the runner's own Python instead of the matrix version (#4).
 
 ## [0.3.0] - 2026-11-13
 
