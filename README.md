@@ -46,7 +46,7 @@ export ELEVENLABS_API_KEY="..."
 export ELEVENLABS_VOICE_ID="..."
 ```
 
-or in `~/.claude/voice-personas/config.json` (run `chmod 600` on it). The config file is the safer choice if Claude Code is started from tmux or an IDE that may not see your shell profile.
+or in `~/.claude/voice-personas/config.json` (run `chmod 600` on it). Every supported variable is listed in [`.env.example`](.env.example); the plugin does not load `.env` files itself. The config file is the safer choice if Claude Code is started from tmux or an IDE that may not see your shell profile.
 
 Restart Claude Code, then run:
 
