@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Hook PostToolUse и Stop: озвучить новые реплики <speak>."""
+"""PostToolUse and Stop hook: speak new <speak> lines."""
+
 import sys
 from pathlib import Path
 

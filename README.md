@@ -1,44 +1,65 @@
-# Claude-Code-Voice
+# Claude Code Voice
 
-Плагин для Claude Code (macOS): персоны ответов (цундере, воин, дворецкий, нуар) и озвучка реплик персоны по ходу работы через ElevenLabs.
+A Claude Code plugin that gives Claude a persona and a voice. While Claude works, it writes short status lines such as "Reading the config, then running the tests", and the plugin speaks them aloud through ElevenLabs.
 
-## Что умеет
+> **Platform support:** macOS only for now. Linux and Windows are in progress ([#4](https://github.com/Dragonav4/Claude-Code-Voice/issues/4)).
 
-- **Персоны.** `/persona <имя>` меняет тон ответов. Код, команды и коммиты остаются нейтральными.
-- **Озвучка по ходу работы.** Перед действиями и в конце хода Claude пишет короткую реплику в `<speak>...</speak>`, плагин её озвучивает. Код, пути и логи наружу не уходят.
-- **Обрыв речи.** Новое сообщение сразу обрывает недоговорённую реплику и очередь. Вручную: `/voice stop`.
-- **Запасной голос.** Если нет ключа, кончились кредиты или нет сети, говорит системный `say` (по умолчанию русская Milena).
-- **Голосовые уведомления.** «Нужно разрешение» и «жду тебя» звучат фразой в стиле персоны.
-- **Кэш фраз.** Одинаковые реплики не синтезируются повторно и не тратят кредиты.
-- **Скорость, громкость, приглушение Music.app** на время речи (выключено по умолчанию).
+## What it does
 
-Зависимостей нет: только `python3` и встроенные `afplay`, `say`, `osascript`.
+- `/persona <name>` sets the tone of Claude's replies. Four personas are built in: `tsundere`, `warrior`, `butler`, `noir`. Code, commands and commit messages are not affected.
+- Claude adds a short line in `<speak>...</speak>` before tool calls and at the end of each turn. Only that line is sent to the TTS service, never code, file paths or logs.
+- Sending a new message stops whatever is being spoken.
+- Permission prompts and idle waits are announced out loud.
+- If ElevenLabs is unavailable (no key, no credits, no network), the macOS `say` voice is used instead.
+- Synthesized lines are cached on disk, so a repeated line costs nothing.
 
-## Установка
+The plugin uses only the Python standard library and the tools that ship with macOS (`afplay`, `say`, `osascript`).
 
-```
-claude plugin marketplace add /путь/к/Claude-Code-Voice
+## Requirements
+
+- macOS with Python 3.10 or newer (`python3` on `PATH`)
+- Claude Code
+- An [ElevenLabs](https://elevenlabs.io) API key and a voice ID (optional: without them the system voice is used)
+
+## Installation
+
+```sh
+git clone https://github.com/Dragonav4/Claude-Code-Voice.git
+claude plugin marketplace add "$PWD/Claude-Code-Voice"
 claude plugin install voice-personas@claude-code-voice
 ```
 
-Ключ ElevenLabs задай в `~/.zshrc` (`export ELEVENLABS_API_KEY="..."`) или в `config.json` (см. ниже, тогда `chmod 600`). Если Claude Code запущен из старого окружения (tmux, IDE), надёжнее `config.json`.
+Provide the ElevenLabs credentials either as environment variables:
 
-Затем в Claude Code: `/persona list`, `/persona warrior`, `/voice test`.
+```sh
+export ELEVENLABS_API_KEY="..."
+export ELEVENLABS_VOICE_ID="..."
+```
 
-## Команды
+or in `~/.claude/voice-personas/config.json` (run `chmod 600` on it). The config file is the safer choice if Claude Code is started from tmux or an IDE that may not see your shell profile.
 
-| Команда | Что делает |
+Restart Claude Code, then run:
+
+```
+/persona warrior
+/voice test
+```
+
+## Commands
+
+| Command | Description |
 |---|---|
-| `/persona list` | список персон |
-| `/persona <имя>` / `/persona off` | выбрать / выключить (со следующего сообщения) |
-| `/voice on` / `/voice off` | включить / выключить озвучку |
-| `/voice stop` | оборвать текущую речь |
-| `/voice test [текст]` | проверить голос |
-| `/voice status` | ключ, голос, настройки, путь к логу |
+| `/persona list` | List the available personas |
+| `/persona <name>` | Use a persona, starting from the next message |
+| `/persona off` | Turn the persona off |
+| `/voice on`, `/voice off` | Turn speech on or off |
+| `/voice stop` | Stop the current speech |
+| `/voice test [text]` | Speak a test line |
+| `/voice status` | Show the key, voice, settings and log location |
 
-## Настройки
+## Configuration
 
-`~/.claude/voice-personas/config.json`, все поля необязательны:
+All fields of `~/.claude/voice-personas/config.json` are optional:
 
 ```json
 {
@@ -58,43 +79,61 @@ claude plugin install voice-personas@claude-code-voice
 }
 ```
 
-- Порядок выбора голоса: `voices.<persona>`, затем `voice_id:` в файле персоны, затем `ELEVENLABS_VOICE_ID`, затем `default_voice`.
-- `rate` от 0.5 до 2.0, `volume` от 0 до 1. Значения вне диапазона обрезаются.
-- `fallback: "none"` — молчать, если ElevenLabs недоступен.
-- `ELEVENLABS_API_KEY` и `ELEVENLABS_MODEL_ID` из окружения важнее конфига.
+| Field | Meaning |
+|---|---|
+| `voices` | ElevenLabs voice per persona |
+| `rate`, `volume` | Speech rate (0.5–2.0) and volume (0–1); out-of-range values are clamped |
+| `fallback` | `"say"` to use the system voice when ElevenLabs fails, `"none"` to stay silent |
+| `fallback_voice` | Voice for `say`; run `say -v '?'` to list the installed voices |
+| `interrupt_on_prompt` | Stop speaking when you send a new message |
+| `notifications` | Announce permission prompts and idle waits |
+| `duck_music`, `duck_volume` | Lower the Music app volume while speaking |
+| `cache_mb` | Size limit of the phrase cache |
 
-## Свои персоны
+The voice for a persona is chosen in this order: `voices.<persona>`, the `voice_id` in the persona file, `ELEVENLABS_VOICE_ID`, `default_voice`. Environment variables take precedence over the config file.
 
-Файл `~/.claude/voice-personas/personas/<имя>.md` в формате файлов из `personas/`. Он перекрывает встроенную персону с тем же именем. В frontmatter можно задать `voice_id:`, `say_permission:` и `say_idle:` (фразы уведомлений).
+## Custom personas
 
-## Отладка
+Create `~/.claude/voice-personas/personas/<name>.md` using the same format as the files in [`personas/`](personas). A file with the same name as a built-in persona replaces it. Optional frontmatter fields:
 
-- Ошибки озвучки пишутся в `~/.claude/voice-personas/speak.log`.
-- `VOICE_PERSONAS_DRY_RUN=1` печатает реплики вместо синтеза и воспроизведения.
-- Тесты: `python3 -m unittest discover -s tests -t tests`.
-
-## Устройство кода
-
+```yaml
+---
+description: One-line description shown in /persona list
+voice_id: ELEVENLABS_VOICE_ID
+say_permission: Phrase spoken when Claude asks for permission
+say_idle: Phrase spoken when Claude is waiting for you
+---
 ```
-bin/                 точки входа: hooks и команды (по 10 строк)
-voice_personas/
-  domain/            чистая логика: настройки, персона, реплики, уведомления (без IO)
-  app/               сценарии: narrate, notify, prompt, speak, control
-    container.py     сборка зависимостей — единственное место, где app встречает infra
-  infra/             внешний мир: файлы, транскрипт, ElevenLabs, afplay/say, Music, процессы
-personas/            встроенные персоны
-```
 
-Зависимости направлены внутрь: `bin → app → domain`, а `infra` подключается только в `app/container.py` и `app/runner.py`. Сценарии получают всё через объект `App`, поэтому в тестах любую зависимость можно подменить.
+## How it works
 
-Путь одной реплики: `bin/on_speak.py` → `app/narrate.py` (новые `<speak>` из транскрипта) → очередь → `bin/worker.py` → `app/speak.py` (ElevenLabs или `say`) → `infra/audio.py`.
+1. On every prompt, a `UserPromptSubmit` hook adds the persona and the `<speak>` rule to Claude's context.
+2. After each tool call and at the end of the turn, the `PostToolUse` and `Stop` hooks read the session transcript and collect `<speak>` lines that have not been spoken yet.
+3. A background worker synthesizes each line and plays it. Lines play one at a time and never block Claude.
+4. A new prompt stops the worker.
 
-## Известные ограничения
+Design decisions are recorded in [`docs/adr`](docs/adr).
 
-- Теги `<speak>` видны в тексте ответа.
-- Если Claude не поставил `<speak>`, озвучки не будет. Это зависит от того, как модель следует промпту.
-- Каждая реплика — отдельный платный запрос к ElevenLabs. Кэш помогает только для повторяющихся фраз.
+## Troubleshooting
 
-## Идеи, взятые у других
+- Run `/voice status` to check whether the key and voice ID are found.
+- Errors are logged to `~/.claude/voice-personas/speak.log`.
+- Set `VOICE_PERSONAS_DRY_RUN=1` to print lines instead of speaking them.
 
-Обрыв речи и ducking подсмотрены в [ktaletsk/claude-code-tts](https://github.com/ktaletsk/claude-code-tts), запасной голос и уведомления — в [ZeldOcarina/claude-code-voice-notifications](https://github.com/ZeldOcarina/claude-code-voice-notifications), скорость — в [cc-vox](https://github.com/BestSithInEU/cc-vox). Код написан заново.
+## Limitations
+
+- The `<speak>` tags appear in the reply text.
+- If Claude does not write a `<speak>` line, nothing is spoken.
+- Each spoken line is a separate ElevenLabs request. The cache only helps with repeated lines.
+
+## Contributing
+
+See [CONVENTIONS.md](CONVENTIONS.md) for the code layout, git flow and tasks. Run `task lint && task test` before opening a pull request.
+
+## Acknowledgements
+
+Some ideas come from other Claude Code TTS projects: interruption and ducking from [ktaletsk/claude-code-tts](https://github.com/ktaletsk/claude-code-tts), the fallback voice and notifications from [ZeldOcarina/claude-code-voice-notifications](https://github.com/ZeldOcarina/claude-code-voice-notifications), and the rate setting from [cc-vox](https://github.com/BestSithInEU/cc-vox). No code was copied.
+
+## License
+
+[Apache 2.0](LICENSE)

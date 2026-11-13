@@ -1,1 +1,1 @@
-"""Слой приложения: сценарии и сборка зависимостей."""
+"""Application layer: use cases and dependency wiring."""

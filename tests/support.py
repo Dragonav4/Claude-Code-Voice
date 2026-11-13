@@ -1,4 +1,5 @@
-"""Общие помощники тестов: путь к пакету и изолированное приложение во временной папке."""
+"""Shared test helpers: package path and an isolated app in a temporary folder."""
+
 import json
 import shutil
 import sys
@@ -13,7 +14,7 @@ from voice_personas.app.container import build_app  # noqa: E402
 
 
 class TempHomeTest(unittest.TestCase):
-    """Каждый тест получает свою пустую ~/.claude/voice-personas."""
+    """Every test gets its own empty ~/.claude/voice-personas."""
 
     def setUp(self):
         self.home = Path(tempfile.mkdtemp(prefix="voice-personas-test-"))
@@ -30,8 +31,10 @@ class TempHomeTest(unittest.TestCase):
 
 
 def assistant(text):
-    return {"type": "assistant",
-            "message": {"role": "assistant", "content": [{"type": "text", "text": text}]}}
+    return {
+        "type": "assistant",
+        "message": {"role": "assistant", "content": [{"type": "text", "text": text}]},
+    }
 
 
 def write_transcript(path, records):

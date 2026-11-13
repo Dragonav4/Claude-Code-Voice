@@ -1,4 +1,5 @@
-"""Воркер: озвучить реплики по очереди. ElevenLabs, при неудаче — `say`."""
+"""Worker: speak lines one by one. ElevenLabs, falling back to `say`."""
+
 import os
 
 
@@ -14,8 +15,8 @@ def speak_job(app, job):
     texts = [text for text in job.get("texts") or [] if isinstance(text, str) and text]
     voice_id = app.settings.voice_for(app.personas.get(job.get("persona")))
     settings = app.settings
-    with app.queue.registered(os.getpid()):     # видим для обрыва, даже пока ждём очереди
-        with app.store.lock("speak"):           # реплики не накладываются
+    with app.queue.registered(os.getpid()):  # can be stopped even while waiting in the queue
+        with app.store.lock("speak"):  # lines never overlap
             with app.ducked(settings.duck_music, settings.duck_volume):
                 for text in texts:
                     speak_line(app, text, voice_id)

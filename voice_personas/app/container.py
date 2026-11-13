@@ -1,9 +1,11 @@
-"""Composition root: здесь (и в runner.py) app связывается с конкретной infra.
+"""Composition root: here (and in runner.py) app is wired to a concrete infra.
 
-Сценарии получают зависимости только через App и infra не импортируют."""
+Use cases get dependencies only through App and never import infra."""
+
 import os
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
 
 from ..domain import Settings
 from ..infra.audio import Player
@@ -22,10 +24,10 @@ class App:
     store: Store
     personas: Personas
     settings: Settings
-    queue: Any          # ProcessQueue | PrintQueue
+    queue: Any  # ProcessQueue | PrintQueue
     synth: ElevenLabs
     player: Player
-    ducked: Callable           # (enabled, level) -> context manager
+    ducked: Callable  # (enabled, level) -> context manager
     read_transcript: Callable  # (path) -> [TextBlock]
 
 

@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Команды /persona и /voice: ctl.py persona [list|<имя>|off], ctl.py voice [on|off|status|stop|test]."""
+"""/persona and /voice commands.
+
+ctl.py persona [list|<name>|off]
+ctl.py voice [on|off|status|stop|test]
+"""
+
 import sys
 from pathlib import Path
 

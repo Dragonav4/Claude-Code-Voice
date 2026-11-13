@@ -1,1 +1,1 @@
-"""voice-personas: персоны и озвучка для Claude Code."""
+"""voice-personas: personas and narration for Claude Code."""

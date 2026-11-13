@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Lint and test (ubuntu, Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.14"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup uv and Python
+        uses: astral-sh/setup-uv@v10.3.3
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Lint
+        run: uvx ruff check .
+
+      - name: Check formatting
+        run: uvx ruff format --check .
+
+      - name: Test
+        run: python -W error::ResourceWarning -m unittest discover -s tests -t tests
+
+  macos:
+    # macOS minutes cost 10x in a private repo, so run this only before a release.
+    name: Test (macOS)
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: macos-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup uv and Python
+        uses: astral-sh/setup-uv@v10.3.3
+        with:
+          python-version: "3.14"
+
+      - name: Test
+        run: python -W error::ResourceWarning -m unittest discover -s tests -t tests

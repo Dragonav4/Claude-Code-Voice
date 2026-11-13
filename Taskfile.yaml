@@ -1,0 +1,30 @@
+version: "3"
+
+tasks:
+  test:
+    desc: Run the whole test suite
+    cmds:
+      - python3 -W error::ResourceWarning -m unittest discover -s tests -t tests
+
+  lint:
+    desc: Check code style and formatting with ruff
+    cmds:
+      - uvx ruff check .
+      - uvx ruff format --check .
+
+  format:
+    desc: Fix lint issues and format the code
+    cmds:
+      - uvx ruff check --fix .
+      - uvx ruff format .
+
+  validate:
+    desc: Validate the plugin and marketplace manifests
+    cmds:
+      - claude plugin validate .
+
+  reinstall:
+    desc: Pull repo changes into the installed plugin (restart Claude Code afterwards)
+    cmds:
+      - claude plugin marketplace update claude-code-voice
+      - claude plugin update voice-personas@claude-code-voice

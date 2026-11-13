@@ -1,4 +1,5 @@
-"""Где лежат файлы плагина. Всё вне папки плагина переживает его обновления."""
+"""Where plugin files live. Everything outside the plugin folder survives updates."""
+
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -7,7 +8,7 @@ PLUGIN_ROOT = Path(__file__).resolve().parents[2]
 
 @dataclass(frozen=True)
 class Paths:
-    home: Path                 # ~/.claude/voice-personas
+    home: Path  # ~/.claude/voice-personas
     plugin_root: Path = PLUGIN_ROOT
 
     @classmethod
@@ -33,19 +34,19 @@ class Paths:
 
     @property
     def user_personas(self):
-        return self.home / "personas"   # свои персоны перекрывают встроенные
+        return self.home / "personas"  # user personas override built-in ones
 
     @property
     def spoken_dir(self):
-        return self.home / "spoken"     # какие реплики сессии уже озвучены
+        return self.home / "spoken"  # which lines of a session were already spoken
 
     @property
     def cache_dir(self):
-        return self.home / "cache"      # синтезированные фразы
+        return self.home / "cache"  # synthesized phrases
 
     @property
     def workers_dir(self):
-        return self.home / "workers"    # pid активных воркеров озвучки
+        return self.home / "workers"  # pids of active speech workers
 
     @property
     def worker_script(self):

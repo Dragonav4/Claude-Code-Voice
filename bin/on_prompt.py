@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Hook UserPromptSubmit: оборвать речь и добавить персону в контекст."""
+"""UserPromptSubmit hook: cut off speech and add the persona to the context."""
+
 import sys
 from pathlib import Path
 

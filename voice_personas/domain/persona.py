@@ -1,14 +1,17 @@
-"""Персона: тон ответов, голос и фразы уведомлений."""
+"""Persona: reply tone, voice and notification phrases."""
+
 import re
 from dataclasses import dataclass, field
 from types import MappingProxyType
 
 FRONTMATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n?(.*)\Z", re.S)
 
-DEFAULT_PHRASES = MappingProxyType({
-    "permission": "Нужно твоё разрешение.",
-    "idle": "Я закончил и жду тебя.",
-})
+DEFAULT_PHRASES = MappingProxyType(
+    {
+        "permission": "Нужно твоё разрешение.",
+        "idle": "Я закончил и жду тебя.",
+    }
+)
 
 SPEAK_RULES = """\
 Voice narration (the user hears these lines through text-to-speech):
@@ -19,7 +22,7 @@ Voice narration (the user hears these lines through text-to-speech):
 
 
 def _parse_frontmatter(text):
-    """(meta, body). meta — простые строки `key: value`."""
+    """(meta, body). meta holds plain `key: value` lines."""
     match = FRONTMATTER_RE.match(text)
     if not match:
         return {}, text.strip()
@@ -55,7 +58,7 @@ class Persona:
         return self.phrases.get(kind) or DEFAULT_PHRASES[kind]
 
     def context(self, with_voice):
-        """Текст, который hook UserPromptSubmit добавляет в контекст Claude."""
+        """Text the UserPromptSubmit hook adds to Claude's context."""
         parts = [f"[voice-personas] Active persona: {self.name}", self.prompt]
         if with_voice:
             parts.append(SPEAK_RULES)

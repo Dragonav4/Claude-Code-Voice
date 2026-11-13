@@ -1,6 +1,9 @@
-"""Обвязка точек входа: разбор stdin, сборка App, ошибки — в лог, не на экран.
+"""Entry point wiring: parse stdin, build App, send errors to the log, not the screen.
 
-Вместе с container.py это composition root: лог нужен, даже если App не собрался."""
+Together with container.py this is the composition root: the log has to work
+even if App fails to build.
+"""
+
 import json
 import os
 import sys
@@ -20,16 +23,15 @@ def read_payload(stream):
 
 
 def log_crash(where):
-    Log(Paths.from_env(os.environ).log_file).write(
-        f"{where} failed:\n{traceback.format_exc()}")
+    Log(Paths.from_env(os.environ).log_file).write(f"{where} failed:\n{traceback.format_exc()}")
 
 
 def run_hook(handler):
-    """Hook никогда не роняет Claude Code: всегда выходит с кодом 0."""
+    """A hook never crashes Claude Code: it always exits with code 0."""
     try:
         output = handler(build_app(), read_payload(sys.stdin))
         if output:
-            print(output)  # для UserPromptSubmit stdout попадает в контекст Claude
+            print(output)  # for UserPromptSubmit, stdout goes into Claude's context
     except Exception:
         log_crash(handler.__name__)
     return 0

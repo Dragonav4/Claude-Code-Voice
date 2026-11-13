@@ -53,11 +53,14 @@ class PersonasTest(support.TempHomeTest):
 
 class TranscriptTest(support.TempHomeTest):
     def test_reads_only_assistant_text(self):
-        path = support.write_transcript(self.home / "t.jsonl", [
-            {"type": "user", "message": {"role": "user", "content": "нет"}},
-            "{broken",
-            support.assistant("да"),
-        ])
+        path = support.write_transcript(
+            self.home / "t.jsonl",
+            [
+                {"type": "user", "message": {"role": "user", "content": "нет"}},
+                "{broken",
+                support.assistant("да"),
+            ],
+        )
         self.assertEqual([(b.key, b.text) for b in read_text_blocks(path)], [("2:0", "да")])
 
     def test_missing_file(self):
@@ -106,34 +109,45 @@ class PlayerTest(unittest.TestCase):
 
     def test_afplay_gets_rate_and_volume(self):
         with mock.patch.object(audio.shutil, "which", return_value="/usr/bin/afplay"):
-            self.assertEqual(self.player(rate=1.25, volume=0.5).file_command("/a.mp3"),
-                             ["afplay", "-r", "1.25", "-v", "0.5", "/a.mp3"])
+            self.assertEqual(
+                self.player(rate=1.25, volume=0.5).file_command("/a.mp3"),
+                ["afplay", "-r", "1.25", "-v", "0.5", "/a.mp3"],
+            )
 
     def test_say_text_cannot_become_option(self):
         player = self.player()
-        with mock.patch.object(audio.shutil, "which", return_value="/usr/bin/say"), \
-                mock.patch.object(player, "_installed_say_voices", return_value={"Milena"}):
-            self.assertEqual(player.say_command("-v hack"),
-                             ["say", "-r", "175", "-v", "Milena", "--", "-v hack"])
+        with (
+            mock.patch.object(audio.shutil, "which", return_value="/usr/bin/say"),
+            mock.patch.object(player, "_installed_say_voices", return_value={"Milena"}),
+        ):
+            self.assertEqual(
+                player.say_command("-v hack"), ["say", "-r", "175", "-v", "Milena", "--", "-v hack"]
+            )
 
     def test_missing_say_voice_dropped(self):
         player = self.player(fallback_voice="Nope")
-        with mock.patch.object(audio.shutil, "which", return_value="/usr/bin/say"), \
-                mock.patch.object(player, "_installed_say_voices", return_value={"Milena"}):
+        with (
+            mock.patch.object(audio.shutil, "which", return_value="/usr/bin/say"),
+            mock.patch.object(player, "_installed_say_voices", return_value={"Milena"}),
+        ):
             self.assertNotIn("-v", player.say_command("привет"))
 
     def test_localized_say_listing(self):
-        listing = ("Milena (Русский (Россия)) ru_RU    # Здравствуйте!\n"
-                   "Samantha            en_US    # Hello!\n"
-                   "Good News           en_US    # Hello!\n")
+        listing = (
+            "Milena (Русский (Россия)) ru_RU    # Здравствуйте!\n"
+            "Samantha            en_US    # Hello!\n"
+            "Good News           en_US    # Hello!\n"
+        )
         self.assertEqual(audio.say_voice_names(listing), {"Milena", "Samantha", "Good News"})
 
 
 class MusicTest(unittest.TestCase):
     def run_ducked(self, current, enabled=True):
-        with mock.patch.object(music, "music_volume", return_value=current), \
-                mock.patch.object(music, "set_music_volume") as set_volume, \
-                mock.patch.object(music.shutil, "which", return_value="/usr/bin/osascript"):
+        with (
+            mock.patch.object(music, "music_volume", return_value=current),
+            mock.patch.object(music, "set_music_volume") as set_volume,
+            mock.patch.object(music.shutil, "which", return_value="/usr/bin/osascript"),
+        ):
             with self.assertRaises(RuntimeError):
                 with music.ducked(enabled, 20):
                     raise RuntimeError

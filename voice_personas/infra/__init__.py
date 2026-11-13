@@ -1,1 +1,1 @@
-"""Инфраструктура: диск, сеть, процессы, звук."""
+"""Infrastructure: disk, network, processes, audio."""

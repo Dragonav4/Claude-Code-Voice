@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Фоновый воркер озвучки. Запускается очередью, задание читает из stdin."""
+"""Background speech worker. Started by the queue, reads its job from stdin."""
+
 import signal
 import sys
 from pathlib import Path
@@ -12,7 +13,7 @@ from voice_personas.app.speak import speak_job  # noqa: E402
 
 
 def stop_gracefully(signum, frame):
-    raise SystemExit(0)  # finally-блоки вернут громкость Music и снимут регистрацию
+    raise SystemExit(0)  # lets finally blocks restore Music volume and unregister
 
 
 if __name__ == "__main__":
