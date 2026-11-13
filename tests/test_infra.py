@@ -29,7 +29,7 @@ class StoreTest(support.TempHomeTest):
         self.assertEqual(self.store.load_state(), State("noir", voice=False))
 
     def test_broken_files_give_defaults(self):
-        (self.home / "state.json").write_text("{broken")
+        (self.home / "state.json").write_text("{broken", encoding="utf-8")
         self.assertEqual(self.store.load_state(), State())
         self.assertEqual(self.store.load_config(), {})
 
@@ -49,7 +49,9 @@ class PersonasTest(support.TempHomeTest):
 
     def test_user_persona_overrides_builtin(self):
         (self.home / "personas").mkdir()
-        (self.home / "personas" / "noir.md").write_text("---\ndescription: мой\n---\nmine")
+        (self.home / "personas" / "noir.md").write_text(
+            "---\ndescription: мой\n---\nmine", encoding="utf-8"
+        )
         self.assertEqual(Personas(Paths(self.home)).get("noir").description, "мой")
 
 
@@ -112,7 +114,10 @@ class PlayerTest(support.TempHomeTest):
     def test_missing_player_is_logged_not_raised(self):
         with mock.patch.object(audio.players, "file_command", return_value=None):
             self.player(LINUX).play_file(self.home / "a.mp3")
-        self.assertIn("no audio player for .mp3 files on linux", (self.home / "log").read_text())
+        self.assertIn(
+            "no audio player for .mp3 files on linux",
+            (self.home / "log").read_text(encoding="utf-8"),
+        )
 
     def test_command_gets_stdin_and_env(self):
         command = Command(("tool",), stdin="привет", env=MappingProxyType({"VP_X": "1"}))
@@ -161,7 +166,7 @@ class ProcessQueueTest(support.TempHomeTest):
 
     def register(self, pid):
         (self.home / "workers").mkdir(exist_ok=True)
-        (self.home / "workers" / str(pid)).write_text(str(pid))
+        (self.home / "workers" / str(pid)).write_text(str(pid), encoding="utf-8")
 
     def test_kills_registered_worker(self):
         proc = self.spawn(WORKER_FLAG)
@@ -179,7 +184,7 @@ class ProcessQueueTest(support.TempHomeTest):
 
     def test_garbage_marker_removed(self):
         (self.home / "workers").mkdir()
-        (self.home / "workers" / "junk").write_text("abc")
+        (self.home / "workers" / "junk").write_text("abc", encoding="utf-8")
         self.assertEqual(self.queue.stop_all(), 0)
         self.assertEqual(list((self.home / "workers").iterdir()), [])
 

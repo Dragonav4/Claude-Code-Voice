@@ -72,7 +72,7 @@ class ProcessesTest(unittest.TestCase):
 class PlayersTest(unittest.TestCase):
     def test_macos_afplay(self):
         cmd = players.file_command(MACOS, Path("/a.mp3"), 1.25, 0.5, which_only("afplay"))
-        self.assertEqual(cmd.argv, ("afplay", "-r", "1.25", "-v", "0.5", "/a.mp3"))
+        self.assertEqual(cmd.argv, ("afplay", "-r", "1.25", "-v", "0.5", str(Path("/a.mp3"))))
 
     def test_linux_prefers_mpv_then_ffplay(self):
         cmd = players.file_command(LINUX, Path("/a.mp3"), 1.5, 0.8, which_only("mpv", "ffplay"))
@@ -165,7 +165,7 @@ class LauncherTest(unittest.TestCase):
     @unittest.skipIf(os.name == "nt", "the stub is a POSIX script")
     def test_skips_a_python3_stub(self):
         stub_dir = Path(tempfile.mkdtemp())
-        (stub_dir / "python3").write_text("#!/bin/sh\nexit 49\n")
+        (stub_dir / "python3").write_text("#!/bin/sh\nexit 49\n", encoding="utf-8")
         (stub_dir / "python3").chmod(0o755)
         (stub_dir / "python").symlink_to(sys.executable)
         env = {
