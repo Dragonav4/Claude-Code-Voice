@@ -1,0 +1,14 @@
+{
+  "name": "claude-code-voice",
+  "description": "Персоны и голос для Claude Code",
+  "owner": {
+    "name": "Даня"
+  },
+  "plugins": [
+    {
+      "name": "voice-personas",
+      "source": "./",
+      "description": "Персоны ответов + озвучка через ElevenLabs"
+    }
+  ]
+}

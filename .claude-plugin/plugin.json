@@ -1,0 +1,9 @@
+{
+  "name": "voice-personas",
+  "version": "0.3.0",
+  "description": "Персоны для ответов Claude Code (цундере, воин, дворецкий, нуар) с озвучкой через ElevenLabs и запасным системным голосом (macOS)",
+  "author": {
+    "name": "Даня"
+  },
+  "license": "Apache-2.0"
+}
