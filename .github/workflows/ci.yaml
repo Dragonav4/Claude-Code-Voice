@@ -56,8 +56,10 @@ jobs:
           VOICE_PERSONAS_DRY_RUN: "1"
         run: |
           sh bin/run.sh bin/ctl.py persona warrior
-          printf '%s\n' '{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"<speak>Проверка</speak>"}]}}' > "$RUNNER_TEMP/t.jsonl"
-          out=$(printf '{"session_id":"ci","transcript_path":"%s"}' "$RUNNER_TEMP/t.jsonl" | sh bin/run.sh bin/on_speak.py)
+          # A JSON-safe path: `pwd -W` gives D:/a/... in Git Bash, plain `pwd` elsewhere.
+          dir=$(cd "$RUNNER_TEMP" && { pwd -W 2>/dev/null || pwd; })
+          printf '%s\n' '{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"<speak>Проверка</speak>"}]}}' > "$dir/t.jsonl"
+          out=$(printf '{"session_id":"ci","transcript_path":"%s"}' "$dir/t.jsonl" | sh bin/run.sh bin/on_speak.py)
           echo "$out"
           [ "$out" = "[dry-run:warrior] Проверка" ]
 
