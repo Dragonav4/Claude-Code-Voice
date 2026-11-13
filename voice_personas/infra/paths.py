@@ -4,7 +4,14 @@ from dataclasses import dataclass
 from pathlib import Path
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_HOME = Path.home() / ".claude" / "voice-personas"
+
+
+def default_home():
+    """~/.claude/voice-personas, resolved lazily.
+
+    Path.home() raises on Windows when USERPROFILE is missing, so never call it at import time.
+    """
+    return Path.home() / ".claude" / "voice-personas"
 
 
 @dataclass(frozen=True)
@@ -14,7 +21,7 @@ class Paths:
 
     @classmethod
     def from_env(cls, env):
-        home = env.get("VOICE_PERSONAS_HOME") or str(DEFAULT_HOME)
+        home = env.get("VOICE_PERSONAS_HOME") or default_home()
         return cls(home=Path(home).expanduser())
 
     @property

@@ -10,7 +10,7 @@ from pathlib import Path
 from types import MappingProxyType
 
 from ..domain import parse_dotenv
-from .paths import DEFAULT_HOME
+from .paths import default_home
 
 DOTENV = ".env"
 HOME_VARIABLE = "VOICE_PERSONAS_HOME"
@@ -35,7 +35,8 @@ def _read(path):
 
 
 def _home(env):
-    return Path(os.path.expanduser(env.get(HOME_VARIABLE) or str(DEFAULT_HOME)))
+    value = env.get(HOME_VARIABLE)
+    return Path(os.path.expanduser(value)) if value else default_home()
 
 
 def load_environment(base_env, env_dir):
