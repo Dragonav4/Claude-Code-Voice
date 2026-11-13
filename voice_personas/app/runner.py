@@ -14,6 +14,13 @@ from ..infra.storage import Log
 from .container import build_app
 
 
+def use_utf8_stdio():
+    """Windows pipes default to the ANSI code page, which cannot carry Russian text."""
+    for stream in (sys.stdin, sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+
+
 def read_payload(stream):
     try:
         data = json.load(stream)
@@ -29,6 +36,7 @@ def log_crash(where):
 def run_hook(handler):
     """A hook never crashes Claude Code: it always exits with code 0."""
     try:
+        use_utf8_stdio()
         output = handler(build_app(), read_payload(sys.stdin))
         if output:
             print(output)  # for UserPromptSubmit, stdout goes into Claude's context

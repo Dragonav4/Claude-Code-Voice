@@ -4,7 +4,7 @@
 
 - `.claude-plugin/` -- plugin manifest (`plugin.json`) and a marketplace served from this folder (`marketplace.json`).
 - `.github/` -- CI, dependabot, PR and issue templates.
-- `bin/` -- entry points: hooks and the `ctl.py` command. Wiring only, no logic.
+- `bin/` -- entry points: hooks, the `ctl.py` command and `run.sh`, which picks a working Python. Wiring only, no logic.
 - `commands/` -- the `/persona` and `/voice` slash commands.
 - `docs/adr/` -- architecture decision records.
 - `hooks/hooks.json` -- which hooks Claude Code calls and which `bin/*.py` handles each one.
@@ -26,12 +26,15 @@ bin → app → domain
 - `app/` -- use cases (`narrate`, `notify`, `prompt`, `speak`, `control`). They get dependencies only through the `App` object and never import `infra`.
 - `app/container.py` and `app/runner.py` -- the composition root, the only place where `app` meets a concrete `infra`.
 - `infra/` -- the outside world: disk, transcript, ElevenLabs, players, Music.app, processes.
+- `infra/platform/` -- the only place that knows about macOS, Linux and Windows differences ([ADR 0008](docs/adr/0008-cross-platform-support.md)).
 
 Boundary check: `rg "infra" voice_personas/app --glob '!container.py' --glob '!runner.py'` must find nothing.
 
 ## Code
 
-- Python 3.10+ standard library only. External programs (`afplay`, `say`, `piper`) run as processes ([ADR 0002](docs/adr/0002-only-python-standard-library.md)).
+- Python 3.10+ standard library only. External programs (`afplay`, `say`, `espeak-ng`, PowerShell) run as processes ([ADR 0002](docs/adr/0002-only-python-standard-library.md)).
+- Code must run on macOS, Linux and Windows. OS checks belong in `infra/platform/`; never import `fcntl`, call `os.killpg` or assume `python3` elsewhere.
+- Model-written text and file paths reach external programs only through argv lists, stdin or environment variables, never inside a shell or PowerShell script string.
 - Data is immutable: `@dataclass(frozen=True)`, dicts wrapped in `MappingProxyType`. Changes go through `replace()` / `with_*()` and return a new object.
 - Files under 200 lines, functions under 50. Magic numbers become named constants at the top of the module.
 - Hooks never crash Claude Code: errors go to `speak.log`, the exit code is always 0.

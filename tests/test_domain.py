@@ -17,7 +17,7 @@ from voice_personas.domain.speech import MAX_SPOKEN_CHARS
 class SettingsTest(unittest.TestCase):
     def test_defaults(self):
         s = Settings.from_sources({}, {})
-        self.assertEqual((s.rate, s.fallback, s.fallback_voice), (1.0, "say", "Milena"))
+        self.assertEqual((s.rate, s.fallback, s.fallback_voice), (1.0, "say", None))
         self.assertTrue(s.interrupt_on_prompt)
         self.assertIsNone(s.api_key)
 

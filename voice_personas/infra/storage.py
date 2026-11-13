@@ -1,13 +1,12 @@
 """Files on disk: log, state, config, spoken lines, personas."""
 
-import contextlib
-import fcntl
 import json
 import os
 import re
 import time
 
 from ..domain import Persona, State
+from .platform.locks import exclusive_lock
 
 LOG_MAX_BYTES = 200_000
 LOG_KEEP_LINES = 500
@@ -71,14 +70,9 @@ class Store:
     def save_seen(self, session, keys):
         _write_json(self._spoken_file(session), {"keys": list(keys)})
 
-    @contextlib.contextmanager
     def lock(self, name):
         """Inter-process lock: hooks and workers run in parallel."""
-        path = self._paths.lock(name)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "w") as handle:
-            fcntl.flock(handle, fcntl.LOCK_EX)
-            yield
+        return exclusive_lock(self._paths.lock(name))
 
 
 class Personas:

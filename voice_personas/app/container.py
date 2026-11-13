@@ -2,6 +2,7 @@
 
 Use cases get dependencies only through App and never import infra."""
 
+import contextlib
 import os
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -12,6 +13,7 @@ from ..infra.audio import Player
 from ..infra.elevenlabs import ElevenLabs
 from ..infra.music import ducked
 from ..infra.paths import Paths
+from ..infra.platform import MACOS, current_system
 from ..infra.speech_queue import PrintQueue, ProcessQueue
 from ..infra.storage import Log, Personas, Store
 from ..infra.transcript import read_text_blocks
@@ -31,8 +33,13 @@ class App:
     read_transcript: Callable  # (path) -> [TextBlock]
 
 
+def _no_ducking(enabled, level):
+    return contextlib.nullcontext()
+
+
 def build_app(env=None):
     env = os.environ if env is None else env
+    system = current_system()
     paths = Paths.from_env(env)
     log = Log(paths.log_file)
     store = Store(paths)
@@ -46,7 +53,7 @@ def build_app(env=None):
         settings=settings,
         queue=PrintQueue() if dry_run else ProcessQueue(paths, log),
         synth=ElevenLabs(settings, paths.cache_dir, log),
-        player=Player(settings, log),
-        ducked=ducked,
+        player=Player(settings, log, system),
+        ducked=ducked if system == MACOS else _no_ducking,  # Music.app is macOS-only
         read_transcript=read_text_blocks,
     )

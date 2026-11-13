@@ -1,18 +1,17 @@
 """Speech queue: background workers that can be cut off.
 
-Each worker leads its own process group (the player runs inside it), so
-a single killpg stops both the worker and the sound.
+Each worker runs in its own process group with the audio player inside it, so
+stopping the group stops both the worker and the sound.
 """
 
 import contextlib
 import json
 import os
-import signal
-import subprocess
 import sys
 
-WORKER_FLAG = "--voice-personas-worker"  # identifies our own worker in `ps`
-PS_TIMEOUT_S = 3
+from .platform.processes import command_line, spawn_detached, terminate_tree
+
+WORKER_FLAG = "--voice-personas-worker"  # identifies our own worker in the process list
 
 
 class ProcessQueue:
@@ -22,15 +21,8 @@ class ProcessQueue:
 
     def enqueue(self, persona, texts):
         """Starts a worker and returns at once: the hook never waits for audio."""
-        process = subprocess.Popen(
-            [sys.executable, str(self._paths.worker_script), WORKER_FLAG],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            start_new_session=True,
-        )
-        process.stdin.write(json.dumps({"persona": persona, "texts": list(texts)}).encode("utf-8"))
-        process.stdin.close()
+        payload = json.dumps({"persona": persona, "texts": list(texts)}).encode("utf-8")
+        spawn_detached([sys.executable, str(self._paths.worker_script), WORKER_FLAG], payload)
 
     @contextlib.contextmanager
     def registered(self, pid):
@@ -52,9 +44,9 @@ class ProcessQueue:
         stopped = 0
         for marker in directory.iterdir():
             pid = self._read_pid(marker)
-            if pid and self._is_our_worker(pid):
+            if pid and WORKER_FLAG in (command_line(pid) or ""):  # never a reused pid
                 with contextlib.suppress(OSError):
-                    os.killpg(pid, signal.SIGTERM)
+                    terminate_tree(pid)
                     stopped += 1
             with contextlib.suppress(OSError):
                 marker.unlink()
@@ -66,22 +58,7 @@ class ProcessQueue:
             pid = int(marker.read_text(encoding="utf-8").strip())
         except (OSError, ValueError):
             return None
-        return pid if pid > 1 and pid != os.getpgrp() else None
-
-    @staticmethod
-    def _is_our_worker(pid):
-        """Guards against reused pids: only our own process is killed."""
-        try:
-            command = subprocess.run(
-                ["ps", "-o", "command=", "-p", str(pid)],
-                capture_output=True,
-                text=True,
-                timeout=PS_TIMEOUT_S,
-                check=False,
-            ).stdout
-        except (OSError, subprocess.TimeoutExpired):
-            return False
-        return WORKER_FLAG in command
+        return pid if pid > 1 and pid != os.getpid() else None
 
 
 class PrintQueue:

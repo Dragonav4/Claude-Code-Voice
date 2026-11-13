@@ -46,7 +46,7 @@ class Settings:
     rate: float = 1.0  # speech rate
     volume: float = 1.0  # afplay volume
     fallback: str = "say"  # "say" for the system voice, "none" for silence
-    fallback_voice: str = "Milena"  # `say` voice (Russian on macOS)
+    fallback_voice: str | None = None  # system voice name; None picks one by language
     interrupt_on_prompt: bool = True  # a new prompt cuts off speech
     notifications: bool = True  # voice permission / idle notifications
     duck_music: bool = False  # lower Music.app volume while speaking
@@ -70,7 +70,7 @@ class Settings:
             rate=_number(config.get("rate"), d.rate, 0.5, 2.0),
             volume=_number(config.get("volume"), d.volume, 0.0, 1.0),
             fallback=fallback if fallback in FALLBACK_MODES else d.fallback,
-            fallback_voice=_text(config.get("fallback_voice")) or d.fallback_voice,
+            fallback_voice=_text(config.get("fallback_voice")),
             interrupt_on_prompt=_flag(config.get("interrupt_on_prompt"), d.interrupt_on_prompt),
             notifications=_flag(config.get("notifications"), d.notifications),
             duck_music=_flag(config.get("duck_music"), d.duck_music),
