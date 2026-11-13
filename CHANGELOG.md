@@ -5,6 +5,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-13
+
 ### Added
 
 - Repository conventions, ADRs, Taskfile, CI and issue/PR templates (#1).
@@ -38,3 +40,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ### Added
 
 - Personas (tsundere, warrior, butler, noir) and ElevenLabs narration of `<speak>` lines.
+
+[Unreleased]: https://github.com/Dragonav4/Claude-Code-Voice/compare/v0.4.0...dev
+[0.4.0]: https://github.com/Dragonav4/Claude-Code-Voice/releases/tag/v0.4.0
