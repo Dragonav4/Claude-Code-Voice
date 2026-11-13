@@ -19,19 +19,22 @@ def persona_context(app, session):
             app.store.clear_context_mark(session)
         return None
     if session is None:
-        return persona.context(with_voice=state.voice)  # nowhere to remember it
-    mark = persona.fingerprint(with_voice=state.voice)
+        return persona.context(state.voice, state.narration)  # nowhere to remember it
+    mark = persona.fingerprint(state.voice, state.narration)
     if app.store.load_context_mark(session) == mark:
         return persona.reminder(with_voice=state.voice)
     app.store.save_context_mark(session, mark)
-    return persona.context(with_voice=state.voice)
+    return persona.context(state.voice, state.narration)
 
 
 def on_prompt(app, payload):
     """Returns text for Claude's context, or None."""
     if app.settings.interrupt_on_prompt:
         app.queue.stop_all()
-    return persona_context(app, _session(payload))
+    session = _session(payload)
+    if session:
+        app.store.save_turn_count(session, 0)  # a new turn starts the line limit over
+    return persona_context(app, session)
 
 
 def on_session_start(app, payload):

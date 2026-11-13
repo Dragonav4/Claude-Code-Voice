@@ -82,7 +82,8 @@ def select_new(lines, seen, limit=MAX_LINES_PER_RUN):
     """All new lines are marked as spoken, but only the last `limit` are said."""
     known = set(seen)
     fresh = [(key, text) for key, text in lines if key not in known]
-    cleaned = (clean_spoken(text) for _, text in fresh[-limit:] if is_speakable(text))
+    chosen = fresh[-limit:] if limit > 0 else []  # fresh[-0:] would be every line
+    cleaned = (clean_spoken(text) for _, text in chosen if is_speakable(text))
     return Selection(
         to_say=tuple(text for text in cleaned if len(text) >= 2),
         seen=(tuple(seen) + tuple(key for key, _ in fresh))[-MAX_SEEN_KEYS:],

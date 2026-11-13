@@ -64,6 +64,8 @@ Restart Claude Code, then run:
 | `/persona off` | Turn the persona off |
 | `/voice on`, `/voice off` | Turn speech on or off |
 | `/voice stop` | Stop the current speech |
+| `/voice mode end` | Speak only one line at the end of each turn (quieter and cheaper) |
+| `/voice mode all` | Speak before tool calls and at the end of the turn (default) |
 | `/voice test [text]` | Speak a test line |
 | `/voice status` | Show the key, voice, settings and log location |
 
@@ -85,6 +87,7 @@ All fields of `~/.claude/voice-personas/config.json` are optional:
   "notifications": true,
   "duck_music": false,
   "duck_volume": 20,
+  "max_lines_per_turn": 5,
   "cache_mb": 50
 }
 ```
@@ -98,6 +101,7 @@ All fields of `~/.claude/voice-personas/config.json` are optional:
 | `interrupt_on_prompt` | Stop speaking when you send a new message |
 | `notifications` | Announce permission prompts and idle waits |
 | `duck_music`, `duck_volume` | Lower the Music app volume while speaking (macOS only) |
+| `max_lines_per_turn` | At most this many spoken lines per turn (1–20), in any mode |
 | `cache_mb` | Size limit of the phrase cache |
 
 The voice for a persona is chosen in this order: `voices.<persona>`, the `voice_id` in the persona file, `ELEVENLABS_VOICE_ID`, `default_voice`. Environment variables take precedence over the config file.

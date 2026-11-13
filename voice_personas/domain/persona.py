@@ -22,6 +22,14 @@ Voice narration (the user hears these lines through text-to-speech):
 - Never write the tag itself anywhere else, not even inside code or when explaining how narration works: a stray opening tag makes the rest of the reply spoken. In prose, call it "the speak tag".
 - Keep the normal written answer complete. The spoken line is an addition, not a replacement."""
 
+SPEAK_RULES_END = """\
+Voice narration (the user hears these lines through text-to-speech):
+- Speak only once per turn: at the very end of the turn, include one short spoken line wrapped in <speak>...</speak> tags, written in the persona's voice. Do not add spoken lines before tool calls.
+- A spoken line is plain sentences only: at most ~25 words, in the same language as the user's latest message, with no code, file paths, URLs, markdown or emoji. Say what the outcome is.
+- Put nothing inside <speak> that is not meant to be read aloud.
+- Never write the tag itself anywhere else, not even inside code or when explaining how narration works: a stray opening tag makes the rest of the reply spoken. In prose, call it "the speak tag".
+- Keep the normal written answer complete. The spoken line is an addition, not a replacement."""
+
 
 def _parse_frontmatter(text):
     """(meta, body). meta holds plain `key: value` lines."""
@@ -59,11 +67,11 @@ class Persona:
     def phrase(self, kind):
         return self.phrases.get(kind) or DEFAULT_PHRASES[kind]
 
-    def context(self, with_voice):
+    def context(self, with_voice, narration="all"):
         """The full persona text: sent once per session and after every change."""
         parts = [f"[voice-personas] Active persona: {self.name}", self.prompt]
         if with_voice:
-            parts.append(SPEAK_RULES)
+            parts.append(SPEAK_RULES_END if narration == "end" else SPEAK_RULES)
         return "\n\n".join(parts)
 
     def reminder(self, with_voice):
@@ -74,6 +82,7 @@ class Persona:
         )
         return line + (" Keep narrating with the speak tag as instructed." if with_voice else "")
 
-    def fingerprint(self, with_voice):
-        """Changes whenever the full text would change: persona, voice or file edits."""
-        return hashlib.sha256(self.context(with_voice).encode("utf-8")).hexdigest()[:16]
+    def fingerprint(self, with_voice, narration="all"):
+        """Changes whenever the full text would change: persona, voice, mode or file edits."""
+        text = self.context(with_voice, narration)
+        return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]

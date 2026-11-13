@@ -88,7 +88,17 @@ class Store:
         return tuple(key for key in keys if isinstance(key, str)) if isinstance(keys, list) else ()
 
     def save_seen(self, session, keys):
-        _write_json(self._spoken_file(session), {"keys": list(keys)})
+        data = _read_json(self._spoken_file(session))
+        _write_json(self._spoken_file(session), {**data, "keys": list(keys)})
+
+    def load_turn_count(self, session):
+        """Spoken lines since the user's last prompt. Old files without it count as 0."""
+        count = _read_json(self._spoken_file(session)).get("turn", 0)
+        return count if isinstance(count, int) and count >= 0 else 0
+
+    def save_turn_count(self, session, count):
+        data = _read_json(self._spoken_file(session))
+        _write_json(self._spoken_file(session), {**data, "turn": int(count)})
 
     def lock(self, name):
         """Inter-process lock: hooks and workers run in parallel."""
