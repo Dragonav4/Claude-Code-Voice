@@ -6,6 +6,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -19,6 +20,15 @@ class TempHomeTest(unittest.TestCase):
     def setUp(self):
         self.home = Path(tempfile.mkdtemp(prefix="voice-personas-test-"))
         self.addCleanup(shutil.rmtree, self.home, True)
+        # Never fall back to the developer's real ~/.claude/voice-personas (it may hold a key).
+        fake_default = self.home / "default-home"
+        for target in (
+            "voice_personas.infra.environment.default_home",
+            "voice_personas.infra.paths.default_home",
+        ):
+            patcher = mock.patch(target, return_value=fake_default)
+            patcher.start()
+            self.addCleanup(patcher.stop)
 
     def env(self, **extra):
         return {"VOICE_PERSONAS_HOME": str(self.home), "VOICE_PERSONAS_DRY_RUN": "1", **extra}

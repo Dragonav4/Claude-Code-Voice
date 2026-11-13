@@ -62,8 +62,15 @@ class LoadTest(support.TempHomeTest):
         self.assertEqual(Path(result.env["VOICE_PERSONAS_HOME"]), Path.home() / "vp-test-home")
 
     def test_missing_files_are_fine(self):
-        result = load_environment({"X": "1"}, self.plugin)
-        self.assertEqual((dict(result.env), result.warnings), ({"X": "1"}, ()))
+        result = load_environment({"X": "1", "VOICE_PERSONAS_HOME": str(self.state)}, self.plugin)
+        # Compare names only: a failing assertion must never print real values.
+        self.assertEqual(sorted(result.env), ["VOICE_PERSONAS_HOME", "X"])
+        self.assertEqual(result.warnings, ())
+
+    def test_tests_never_see_the_real_home(self):
+        from voice_personas.infra import environment
+
+        self.assertTrue(str(environment.default_home()).startswith(str(self.home)))
 
     @unittest.skipIf(os.name == "nt", "POSIX permissions")
     def test_warns_about_readable_file(self):
