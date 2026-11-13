@@ -18,6 +18,7 @@ Voice narration (the user hears these lines through text-to-speech):
 - Before a batch of tool calls, and at the very end of every turn, include one short spoken line wrapped in <speak>...</speak> tags, written in the persona's voice.
 - A spoken line is plain sentences only: at most ~25 words, in the same language as the user's latest message, with no code, file paths, URLs, markdown or emoji. Say what you are about to do, or what the outcome is.
 - Put nothing inside <speak> that is not meant to be read aloud.
+- Never write the tag itself anywhere else, not even inside code or when explaining how narration works: a stray opening tag makes the rest of the reply spoken. In prose, call it "the speak tag".
 - Keep the normal written answer complete. The spoken line is an addition, not a replacement."""
 
 
