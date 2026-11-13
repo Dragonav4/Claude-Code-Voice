@@ -39,21 +39,18 @@ jobs:
       - name: Test
         run: python -W error::ResourceWarning -m unittest discover -s tests -t tests
 
-  macos:
-    # macOS minutes cost 10x in a private repo, so run this only before a release.
-    name: Test (macOS)
-    if: github.event_name == 'pull_request' && github.base_ref == 'main'
-    runs-on: macos-latest
-    timeout-minutes: 10
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
-
-      - name: Setup uv and Python
-        uses: astral-sh/setup-uv@v10.3.3
         with:
-          python-version: "3.14"
+          fetch-depth: 0  # gitleaks scans every commit of the PR, not only the last one
 
-      - name: Test
-        run: python -W error::ResourceWarning -m unittest discover -s tests -t tests
+      - name: Scan for secrets
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

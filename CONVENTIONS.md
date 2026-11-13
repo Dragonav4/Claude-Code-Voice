@@ -57,13 +57,13 @@ Branches:
 - `dev` -- the default branch, every PR targets it.
 - `main` -- releases only: a `dev → main` PR plus a `vX.Y.Z` tag.
 
-Nobody pushes to `dev` or `main` directly. A private repo on the free plan cannot enforce branch protection, so this rule is an agreement, not a setting.
+`dev` and `main` are protected by rulesets ([ADR 0007](docs/adr/0007-public-repository-with-enforced-rulesets.md)): no direct pushes, no force pushes, no deletion, and a PR merges only with green required checks (`Lint and test`, `Secret scan`) and an up-to-date branch. Release tags `v*` cannot be moved or deleted.
 
 ### PRs
 
 - One issue -- one branch -- one PR into `dev`, with `Closes #N` in the description.
 - Before review: CI is green and the branch contains the latest `dev` (`git merge dev`).
-- PRs into `dev` are squash-merged, leaving one commit with `(#PR)` in history.
+- PRs into `dev` are squash-merged (the only method the ruleset allows), leaving one commit with `(#PR)` in history.
 - Explain non-obvious decisions in a code comment or in the PR. Big ones get an ADR.
 
 ### Release
@@ -71,6 +71,13 @@ Nobody pushes to `dev` or `main` directly. A private repo on the free plan canno
 1. Move the `Unreleased` section of `CHANGELOG.md` to a new version and bump `version` in `.claude-plugin/plugin.json`.
 2. Open a `dev → main` PR and merge it with a merge commit.
 3. Tag `vX.Y.Z` on `main` and run `gh release create`.
+
+## Secrets
+
+- API keys live only in `~/.claude/voice-personas/config.json` or the environment, never in the repository.
+- `.gitignore` excludes `config.json`, `.env`, logs and audio files.
+- GitHub push protection and the gitleaks CI job catch keys that slip through. A key that reached GitHub must be revoked, even if the PR was never merged.
+- Commit with the noreply email: `git config user.email "<id>+<login>@users.noreply.github.com"`.
 
 ## ADR
 
