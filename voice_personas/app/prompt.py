@@ -1,8 +1,8 @@
-"""UserPromptSubmit: оборвать недоговорённую речь и напомнить Claude про персону."""
+"""UserPromptSubmit: cut off unfinished speech and remind Claude of the persona."""
 
 
 def on_prompt(app, payload):
-    """Возвращает текст для контекста Claude или None."""
+    """Returns text for Claude's context, or None."""
     if app.settings.interrupt_on_prompt:
         app.queue.stop_all()
     state = app.store.load_state()

@@ -1,11 +1,12 @@
-"""Чтение JSONL-транскрипта сессии Claude Code."""
+"""Reading the JSONL transcript of a Claude Code session."""
+
 import json
 
 from ..domain import TextBlock
 
 
 def _assistant_texts(record):
-    """Тексты из одной записи транскрипта, если это сообщение ассистента."""
+    """Texts of one transcript record, if it is an assistant message."""
     if not isinstance(record, dict):
         return []
     message = record.get("message") if isinstance(record.get("message"), dict) else {}
@@ -15,13 +16,16 @@ def _assistant_texts(record):
     if isinstance(content, str):
         return [content]
     if isinstance(content, list):
-        return [block.get("text", "") for block in content
-                if isinstance(block, dict) and block.get("type") == "text"]
+        return [
+            block.get("text", "")
+            for block in content
+            if isinstance(block, dict) and block.get("type") == "text"
+        ]
     return []
 
 
 def read_text_blocks(path):
-    """[TextBlock] ассистента. Ключ блока — "номер_строки:номер_блока"."""
+    """Assistant [TextBlock]s. A block key is "line_number:block_number"."""
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
     except OSError:
@@ -31,7 +35,7 @@ def read_text_blocks(path):
         try:
             record = json.loads(line)
         except ValueError:
-            continue  # недописанная строка подхватится при следующем запуске
+            continue  # a half-written line is picked up on the next run
         blocks.extend(
             TextBlock(key=f"{line_no}:{index}", text=text)
             for index, text in enumerate(_assistant_texts(record))

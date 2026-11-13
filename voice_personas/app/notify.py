@@ -1,4 +1,5 @@
-"""Notification: голосом сказать, что Claude ждёт разрешения или ввода."""
+"""Notification: say out loud that Claude waits for permission or input."""
+
 from ..domain import DEFAULT_PHRASES, classify_notification
 
 

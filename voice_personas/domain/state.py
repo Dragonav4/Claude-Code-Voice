@@ -1,4 +1,5 @@
-"""Выбор пользователя: активная персона и включена ли озвучка."""
+"""User choice: the active persona and whether narration is on."""
+
 from dataclasses import dataclass, replace
 
 
@@ -21,7 +22,7 @@ class State:
 
     @property
     def speaking(self):
-        """Озвучка работает только при выбранной персоне."""
+        """Narration works only when a persona is selected."""
         return self.persona is not None and self.voice
 
     def with_persona(self, name):

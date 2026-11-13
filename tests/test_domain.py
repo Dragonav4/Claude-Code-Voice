@@ -2,8 +2,14 @@ import unittest
 
 import support  # noqa: F401
 from voice_personas.domain import (
-    Persona, Settings, State, TextBlock, classify_notification, clean_spoken,
-    find_speak_lines, select_new,
+    Persona,
+    Settings,
+    State,
+    TextBlock,
+    classify_notification,
+    clean_spoken,
+    find_speak_lines,
+    select_new,
 )
 from voice_personas.domain.speech import MAX_SPOKEN_CHARS
 
@@ -21,16 +27,28 @@ class SettingsTest(unittest.TestCase):
         self.assertIsInstance(s.duck_volume, int)
 
     def test_garbage_gives_defaults(self):
-        s = Settings.from_sources({"rate": "fast", "notifications": "yes", "fallback": "x",
-                                   "cache_mb": True, "voices": ["bad"]}, {})
+        s = Settings.from_sources(
+            {
+                "rate": "fast",
+                "notifications": "yes",
+                "fallback": "x",
+                "cache_mb": True,
+                "voices": ["bad"],
+            },
+            {},
+        )
         self.assertEqual((s.rate, s.notifications, s.fallback, s.cache_mb), (1.0, True, "say", 50))
         self.assertEqual(dict(s.voices), {})
 
     def test_env_beats_config(self):
         s = Settings.from_sources(
             {"api_key": "cfg", "model_id": "cfg", "default_voice": "cfg"},
-            {"ELEVENLABS_API_KEY": "env", "ELEVENLABS_MODEL_ID": "env",
-             "ELEVENLABS_VOICE_ID": "env"})
+            {
+                "ELEVENLABS_API_KEY": "env",
+                "ELEVENLABS_MODEL_ID": "env",
+                "ELEVENLABS_VOICE_ID": "env",
+            },
+        )
         self.assertEqual((s.api_key, s.model_id, s.default_voice), ("env", "env", "env"))
 
     def test_voice_priority(self):
@@ -63,12 +81,13 @@ class StateTest(unittest.TestCase):
 
 
 class PersonaTest(unittest.TestCase):
-    TEXT = ("---\ndescription: Воин\nvoice_id:\nsay_idle: Жду приказа.\n---\n"
-            "You are a warrior.\n")
+    TEXT = "---\ndescription: Воин\nvoice_id:\nsay_idle: Жду приказа.\n---\nYou are a warrior.\n"
 
     def test_parse(self):
         p = Persona.parse("warrior", self.TEXT)
-        self.assertEqual((p.description, p.prompt, p.voice_id), ("Воин", "You are a warrior.", None))
+        self.assertEqual(
+            (p.description, p.prompt, p.voice_id), ("Воин", "You are a warrior.", None)
+        )
         self.assertEqual(p.phrase("idle"), "Жду приказа.")
         self.assertEqual(p.phrase("permission"), "Нужно твоё разрешение.")
 
@@ -107,12 +126,16 @@ class SpeechTest(unittest.TestCase):
 
 class NotificationTest(unittest.TestCase):
     def test_classify(self):
-        self.assertEqual(classify_notification({"notification_type": "permission_prompt"}),
-                         "permission")
-        self.assertEqual(classify_notification(
-            {"message": "Claude needs your permission to use Bash"}), "permission")
-        self.assertEqual(classify_notification(
-            {"message": "Claude is waiting for your input"}), "idle")
+        self.assertEqual(
+            classify_notification({"notification_type": "permission_prompt"}), "permission"
+        )
+        self.assertEqual(
+            classify_notification({"message": "Claude needs your permission to use Bash"}),
+            "permission",
+        )
+        self.assertEqual(
+            classify_notification({"message": "Claude is waiting for your input"}), "idle"
+        )
         self.assertIsNone(classify_notification({"message": "auth ok"}))
 
 

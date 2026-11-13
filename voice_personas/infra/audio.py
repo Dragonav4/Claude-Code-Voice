@@ -1,13 +1,14 @@
-"""Проигрывание звука: mp3 через afplay (или mpv/ffplay), текст через `say`."""
+"""Audio playback: mp3 through afplay (or mpv/ffplay), text through `say`."""
+
 import re
 import shutil
 import subprocess
 
-SAY_BASE_WPM = 175          # скорость `say` при rate = 1.0
+SAY_BASE_WPM = 175  # `say` words per minute at rate = 1.0
 PLAY_TIMEOUT_S = 120
 LIST_TIMEOUT_S = 3
-SAY_LINE_RE = re.compile(r"^(.+?)\s+[a-z]{2,3}_[A-Za-z0-9]+\s+#")  # "<имя>  <локаль>  # ..."
-LANGUAGE_SUFFIX_RE = re.compile(r"\s*\(.*\)$")                     # " (Русский (Россия))"
+SAY_LINE_RE = re.compile(r"^(.+?)\s+[a-z]{2,3}_[A-Za-z0-9]+\s+#")  # "<name>  <locale>  # ..."
+LANGUAGE_SUFFIX_RE = re.compile(r"\s*\(.*\)$")  # localized suffix, e.g. " (Russian (Russia))"
 OTHER_PLAYERS = (
     ["mpv", "--no-video", "--really-quiet"],
     ["ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet"],
@@ -15,7 +16,7 @@ OTHER_PLAYERS = (
 
 
 def say_voice_names(listing):
-    """Имена голосов из `say -v ?`. В русской macOS: "Milena (Русский (Россия)) ru_RU  # ..."."""
+    """Voice names from `say -v ?`. Localized macOS prints "Milena (<language>) ru_RU  # ..."."""
     names = set()
     for line in listing.splitlines():
         match = SAY_LINE_RE.match(line)
@@ -37,8 +38,14 @@ class Player:
 
     def file_command(self, path):
         if shutil.which("afplay"):
-            return ["afplay", "-r", f"{self._settings.rate:g}",
-                    "-v", f"{self._settings.volume:g}", str(path)]
+            return [
+                "afplay",
+                "-r",
+                f"{self._settings.rate:g}",
+                "-v",
+                f"{self._settings.volume:g}",
+                str(path),
+            ]
         for player in OTHER_PLAYERS:
             if shutil.which(player[0]):
                 return [*player, str(path)]
@@ -51,12 +58,17 @@ class Player:
         voice = self._settings.fallback_voice
         if voice in self._installed_say_voices():
             command += ["-v", voice]
-        return [*command, "--", text]  # "--": текст никогда не станет опцией
+        return [*command, "--", text]  # "--": the text can never become an option
 
     def _installed_say_voices(self):
         try:
-            listing = subprocess.run(["say", "-v", "?"], capture_output=True, text=True,
-                                     timeout=LIST_TIMEOUT_S, check=False).stdout
+            listing = subprocess.run(
+                ["say", "-v", "?"],
+                capture_output=True,
+                text=True,
+                timeout=LIST_TIMEOUT_S,
+                check=False,
+            ).stdout
         except (OSError, subprocess.TimeoutExpired):
             return set()
         return say_voice_names(listing)
@@ -66,7 +78,12 @@ class Player:
             self._log.write("no audio player found (expected afplay/say on macOS)")
             return
         try:
-            subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                           timeout=PLAY_TIMEOUT_S, check=False)
+            subprocess.run(
+                command,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=PLAY_TIMEOUT_S,
+                check=False,
+            )
         except (OSError, subprocess.TimeoutExpired) as err:
             self._log.write(f"playback failed: {err}")

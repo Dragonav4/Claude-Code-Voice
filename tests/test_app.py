@@ -25,8 +25,11 @@ def captured(func, *args):
 class NarrateTest(support.TempHomeTest):
     def payload(self, text, session="s"):
         path = support.write_transcript(self.home / "t.jsonl", [support.assistant(text)])
-        return {"session_id": session, "transcript_path": str(path),
-                "hook_event_name": "PostToolUse"}
+        return {
+            "session_id": session,
+            "transcript_path": str(path),
+            "hook_event_name": "PostToolUse",
+        }
 
     def test_new_lines_spoken_once(self):
         app = self.app()
@@ -79,9 +82,11 @@ class SpeakLineTest(support.TempHomeTest):
     def run_line(self, synth_result, **config):
         self.write_config(config)
         app = self.app()
-        with mock.patch.object(app.synth, "audio_file", return_value=synth_result), \
-                mock.patch.object(app.player, "play_file") as play, \
-                mock.patch.object(app.player, "say") as say:
+        with (
+            mock.patch.object(app.synth, "audio_file", return_value=synth_result),
+            mock.patch.object(app.player, "play_file") as play,
+            mock.patch.object(app.player, "say") as say,
+        ):
             speak_line(app, "привет", "V")
         return play, say
 
@@ -125,19 +130,26 @@ class ControlTest(support.TempHomeTest):
 
 
 class EntrypointTest(support.TempHomeTest):
-    """bin/*.py запускаются как настоящие hooks: отдельный процесс, JSON в stdin."""
+    """bin/*.py run like real hooks: a separate process with JSON on stdin."""
 
     def run_bin(self, name, payload="", *args):
-        return subprocess.run([sys.executable, str(support.ROOT / "bin" / name), *args],
-                              input=payload, capture_output=True, text=True,
-                              env=self.env(), timeout=20)
+        return subprocess.run(
+            [sys.executable, str(support.ROOT / "bin" / name), *args],
+            input=payload,
+            capture_output=True,
+            text=True,
+            env=self.env(),
+            timeout=20,
+        )
 
     def test_speak_hook(self):
         self.app().store.save_state(State("warrior"))
-        path = support.write_transcript(self.home / "t.jsonl",
-                                        [support.assistant("<speak>В бой</speak>")])
-        result = self.run_bin("on_speak.py", json.dumps({"session_id": "x",
-                                                          "transcript_path": str(path)}))
+        path = support.write_transcript(
+            self.home / "t.jsonl", [support.assistant("<speak>В бой</speak>")]
+        )
+        result = self.run_bin(
+            "on_speak.py", json.dumps({"session_id": "x", "transcript_path": str(path)})
+        )
         self.assertEqual((result.returncode, result.stdout), (0, "[dry-run:warrior] В бой\n"))
 
     def test_garbage_input_never_fails(self):

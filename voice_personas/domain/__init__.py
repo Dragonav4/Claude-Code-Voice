@@ -1,4 +1,5 @@
-"""Чистая логика плагина: без файлов, сети и процессов."""
+"""Pure plugin logic: no files, network or processes."""
+
 from .notification import classify_notification
 from .persona import DEFAULT_PHRASES, Persona
 from .settings import Settings
