@@ -18,6 +18,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ### Fixed
 
 - CI ran the tests on the runner's own Python instead of the matrix version (#4).
+- A mention of the speak tag earlier in a reply made the whole reply spoken; code is now ignored, the nearest opening tag is used and over-long lines are dropped (#10).
 
 ## [0.3.0] - 2026-11-13
 

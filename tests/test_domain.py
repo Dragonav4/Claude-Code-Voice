@@ -11,7 +11,6 @@ from voice_personas.domain import (
     find_speak_lines,
     select_new,
 )
-from voice_personas.domain.speech import MAX_SPOKEN_CHARS
 
 
 class SettingsTest(unittest.TestCase):
@@ -118,7 +117,8 @@ class SpeechTest(unittest.TestCase):
 
     def test_clean(self):
         self.assertEqual(clean_spoken("**Готово** см. https://x.io `код`"), "Готово см. код")
-        self.assertEqual(len(clean_spoken("а" * 1000)), MAX_SPOKEN_CHARS)
+        # Too long lines are rejected in select_new, never cut in the middle (#10).
+        self.assertEqual(len(clean_spoken("а" * 1000)), 1000)
 
     def test_too_short_lines_dropped(self):
         self.assertEqual(select_new([("k", " * ")], ()).to_say, ())
