@@ -77,7 +77,7 @@ Branches:
 
 ## Secrets
 
-- API keys live only in `~/.claude/voice-personas/config.json` or the environment, never in the repository.
+- API keys live only in the environment, `~/.claude/voice-personas/.env` or `config.json`. A `.env` in the plugin folder is allowed for local development and is git-ignored.
 - `.gitignore` excludes `config.json`, `.env`, logs and audio files.
 - GitHub push protection and the gitleaks CI job catch keys that slip through. A key that reached GitHub must be revoked, even if the PR was never merged.
 - Commit with the noreply email: `git config user.email "<id>+<login>@users.noreply.github.com"`.

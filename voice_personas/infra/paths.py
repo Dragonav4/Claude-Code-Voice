@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_HOME = Path.home() / ".claude" / "voice-personas"
 
 
 @dataclass(frozen=True)
@@ -13,8 +14,8 @@ class Paths:
 
     @classmethod
     def from_env(cls, env):
-        home = env.get("VOICE_PERSONAS_HOME") or Path.home() / ".claude" / "voice-personas"
-        return cls(home=Path(home))
+        home = env.get("VOICE_PERSONAS_HOME") or str(DEFAULT_HOME)
+        return cls(home=Path(home).expanduser())
 
     @property
     def state_file(self):

@@ -27,7 +27,8 @@ class TempHomeTest(unittest.TestCase):
         (self.home / "config.json").write_text(json.dumps(config), encoding="utf-8")
 
     def app(self, **extra_env):
-        return build_app(self.env(**extra_env))
+        # An empty .env folder: tests must never pick up a developer's real .env.
+        return build_app(self.env(**extra_env), env_dir=self.home / "no-dotenv")
 
 
 def assistant(text):

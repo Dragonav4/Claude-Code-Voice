@@ -39,14 +39,14 @@ claude plugin marketplace add "$PWD/Claude-Code-Voice"
 claude plugin install voice-personas@claude-code-voice
 ```
 
-Provide the ElevenLabs credentials either as environment variables:
+Put the ElevenLabs credentials into `~/.claude/voice-personas/.env` and run `chmod 600` on it:
 
 ```sh
-export ELEVENLABS_API_KEY="..."
-export ELEVENLABS_VOICE_ID="..."
+ELEVENLABS_API_KEY=...
+ELEVENLABS_VOICE_ID=...
 ```
 
-or in `~/.claude/voice-personas/config.json` (run `chmod 600` on it). Every supported variable is listed in [`.env.example`](.env.example); the plugin does not load `.env` files itself. The config file is the safer choice if Claude Code is started from tmux or an IDE that may not see your shell profile.
+[`.env.example`](.env.example) lists every supported variable. Environment variables exported in your shell and `api_key` in `~/.claude/voice-personas/config.json` work too. Real environment variables take precedence over `.env` files, and `.env` files over `config.json`.
 
 Restart Claude Code, then run:
 
