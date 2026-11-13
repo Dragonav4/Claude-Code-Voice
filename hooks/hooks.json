@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/bin/on_prompt.py"
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/bin/run.sh\" \"${CLAUDE_PLUGIN_ROOT}/bin/on_prompt.py\""
           }
         ]
       }
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/bin/on_speak.py"
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/bin/run.sh\" \"${CLAUDE_PLUGIN_ROOT}/bin/on_speak.py\""
           }
         ]
       }
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/bin/on_speak.py"
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/bin/run.sh\" \"${CLAUDE_PLUGIN_ROOT}/bin/on_speak.py\""
           }
         ]
       }
@@ -36,7 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/bin/on_notify.py"
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/bin/run.sh\" \"${CLAUDE_PLUGIN_ROOT}/bin/on_notify.py\""
           }
         ]
       }

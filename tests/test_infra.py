@@ -3,6 +3,7 @@ import subprocess
 import sys
 import time
 import unittest
+from types import MappingProxyType
 from unittest import mock
 
 import support
@@ -10,6 +11,7 @@ from voice_personas.domain import Settings, State
 from voice_personas.infra import audio, music
 from voice_personas.infra.elevenlabs import ElevenLabs
 from voice_personas.infra.paths import Paths
+from voice_personas.infra.platform import LINUX, Command
 from voice_personas.infra.speech_queue import WORKER_FLAG, ProcessQueue
 from voice_personas.infra.storage import Log, Personas, Store
 from voice_personas.infra.transcript import read_text_blocks
@@ -103,42 +105,26 @@ class ElevenLabsTest(support.TempHomeTest):
         self.assertEqual((old.exists(), new.exists()), (False, True))
 
 
-class PlayerTest(unittest.TestCase):
-    def player(self, **config):
-        return audio.Player(Settings.from_sources(config, {}), Log(os.devnull))
+class PlayerTest(support.TempHomeTest):
+    def player(self, system):
+        return audio.Player(Settings(), Log(self.home / "log"), system)
 
-    def test_afplay_gets_rate_and_volume(self):
-        with mock.patch.object(audio.shutil, "which", return_value="/usr/bin/afplay"):
-            self.assertEqual(
-                self.player(rate=1.25, volume=0.5).file_command("/a.mp3"),
-                ["afplay", "-r", "1.25", "-v", "0.5", "/a.mp3"],
-            )
+    def test_missing_player_is_logged_not_raised(self):
+        with mock.patch.object(audio.players, "file_command", return_value=None):
+            self.player(LINUX).play_file(self.home / "a.mp3")
+        self.assertIn("no audio player for .mp3 files on linux", (self.home / "log").read_text())
 
-    def test_say_text_cannot_become_option(self):
-        player = self.player()
+    def test_command_gets_stdin_and_env(self):
+        command = Command(("tool",), stdin="привет", env=MappingProxyType({"VP_X": "1"}))
         with (
-            mock.patch.object(audio.shutil, "which", return_value="/usr/bin/say"),
-            mock.patch.object(player, "_installed_say_voices", return_value={"Milena"}),
+            mock.patch.object(audio.voices, "say_command", return_value=command),
+            mock.patch.object(audio.subprocess, "run") as run,
         ):
-            self.assertEqual(
-                player.say_command("-v hack"), ["say", "-r", "175", "-v", "Milena", "--", "-v hack"]
-            )
-
-    def test_missing_say_voice_dropped(self):
-        player = self.player(fallback_voice="Nope")
-        with (
-            mock.patch.object(audio.shutil, "which", return_value="/usr/bin/say"),
-            mock.patch.object(player, "_installed_say_voices", return_value={"Milena"}),
-        ):
-            self.assertNotIn("-v", player.say_command("привет"))
-
-    def test_localized_say_listing(self):
-        listing = (
-            "Milena (Русский (Россия)) ru_RU    # Здравствуйте!\n"
-            "Samantha            en_US    # Hello!\n"
-            "Good News           en_US    # Hello!\n"
-        )
-        self.assertEqual(audio.say_voice_names(listing), {"Milena", "Samantha", "Good News"})
+            self.player(LINUX).say("привет")
+        kwargs = run.call_args.kwargs
+        self.assertEqual(run.call_args.args[0], ("tool",))
+        self.assertEqual(kwargs["input"], "привет".encode())
+        self.assertEqual(kwargs["env"]["VP_X"], "1")
 
 
 class MusicTest(unittest.TestCase):

@@ -1,5 +1,6 @@
 """Pure plugin logic: no files, network or processes."""
 
+from .language import detect_language
 from .notification import classify_notification
 from .persona import DEFAULT_PHRASES, Persona
 from .settings import Settings
@@ -14,6 +15,7 @@ __all__ = [
     "State",
     "TextBlock",
     "classify_notification",
+    "detect_language",
     "clean_spoken",
     "find_speak_lines",
     "select_new",

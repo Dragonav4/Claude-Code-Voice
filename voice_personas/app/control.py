@@ -47,7 +47,7 @@ def status_text(app):
             f"ElevenLabs API key: {'найден' if s.api_key else 'НЕ найден'}",
             f"Voice ID: {voice_id or 'НЕ задан'}",
             f"Модель: {s.model_id}, скорость {s.rate}, громкость {s.volume}",
-            f"Запасной голос: {s.fallback} ({s.fallback_voice})",
+            f"Запасной голос: {s.fallback} ({s.fallback_voice or 'по языку реплики'})",
             f"Обрыв речи новым сообщением: {_yes_no(s.interrupt_on_prompt)}",
             f"Голосовые уведомления: {_yes_no(s.notifications)}",
             f"Приглушение Music: {_yes_no(s.duck_music)}",

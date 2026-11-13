@@ -138,6 +138,7 @@ class EntrypointTest(support.TempHomeTest):
             input=payload,
             capture_output=True,
             text=True,
+            encoding="utf-8",
             env=self.env(),
             timeout=20,
         )
