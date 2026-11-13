@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ### Added
 
 - Repository conventions, ADRs, Taskfile, CI and issue/PR templates (#1).
+- Secret scanning in CI (gitleaks) and `.gitignore` rules for local state (#5).
 
 ## [0.3.0] - 2026-11-13
 

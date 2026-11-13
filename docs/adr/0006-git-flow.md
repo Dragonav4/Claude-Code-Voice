@@ -4,7 +4,7 @@ Date: 2026-11-13
 
 ## Status
 
-Accepted
+Superseded by [7. Public repository with enforced rulesets](0007-public-repository-with-enforced-rulesets.md)
 
 ## Context
 
