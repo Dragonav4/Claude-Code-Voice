@@ -11,10 +11,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Secret scanning in CI (gitleaks) and `.gitignore` rules for local state (#5).
 - Linux and Windows support: platform layer for locks, processes, players and system voices; `bin/run.sh` picks a working Python; CI on ubuntu, windows and macos (#4).
 - Settings from `.env` files in `~/.claude/voice-personas/` and the plugin folder, with `.env.example` listing every variable (#8).
+- ElevenLabs audio tags ([laughs], [sighs], [sarcastic], ...) in spoken lines on eleven_v3/v4 models; removed for other models and the system voice (#13).
 
 ### Changed
 
 - The system voice is picked by the language of the line instead of always using Milena (#4).
+- The tsundere persona is sharper and drier, with boundaries and rules for coding work (#13).
 
 ### Fixed
 

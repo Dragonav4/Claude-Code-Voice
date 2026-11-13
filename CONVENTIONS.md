@@ -39,7 +39,7 @@ Boundary check: `rg "infra" voice_personas/app --glob '!container.py' --glob '!r
 - Files under 200 lines, functions under 50. Magic numbers become named constants at the top of the module.
 - Hooks never crash Claude Code: errors go to `speak.log`, the exit code is always 0.
 - Everything coming from outside (stdin JSON, `config.json`, the transcript) is validated at the boundary. Garbage falls back to defaults.
-- Code, comments and docs are in English. User-facing strings (command output, spoken phrases, persona files) stay in Russian.
+- Code, comments, docs and persona prompts are in English. User-facing strings (command output, spoken phrases, example lines in personas) stay in Russian.
 - Style is enforced by `ruff` (config in `pyproject.toml`).
 
 ## Tests
