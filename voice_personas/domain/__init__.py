@@ -1,5 +1,6 @@
 """Pure plugin logic: no files, network or processes."""
 
+from .dotenv import parse_dotenv
 from .language import detect_language
 from .notification import classify_notification
 from .persona import DEFAULT_PHRASES, Persona
@@ -26,6 +27,7 @@ __all__ = [
     "detect_language",
     "clean_spoken",
     "find_speak_lines",
+    "parse_dotenv",
     "select_new",
     "strip_audio_tags",
     "supports_audio_tags",

@@ -11,8 +11,9 @@ from typing import Any
 from ..domain import Settings
 from ..infra.audio import Player
 from ..infra.elevenlabs import ElevenLabs
+from ..infra.environment import load_environment
 from ..infra.music import ducked
-from ..infra.paths import Paths
+from ..infra.paths import PLUGIN_ROOT, Paths
 from ..infra.platform import MACOS, current_system
 from ..infra.speech_queue import PrintQueue, ProcessQueue
 from ..infra.storage import Log, Personas, Store
@@ -37,11 +38,15 @@ def _no_ducking(enabled, level):
     return contextlib.nullcontext()
 
 
-def build_app(env=None):
-    env = os.environ if env is None else env
+def build_app(env=None, env_dir=PLUGIN_ROOT):
+    """`env_dir` is where the plugin-level .env lives; tests point it at an empty folder."""
+    loaded = load_environment(os.environ if env is None else env, env_dir)
+    env = loaded.env
     system = current_system()
     paths = Paths.from_env(env)
     log = Log(paths.log_file)
+    for warning in loaded.warnings:
+        log.write(warning)
     store = Store(paths)
     settings = Settings.from_sources(store.load_config(), env)
     dry_run = bool(env.get("VOICE_PERSONAS_DRY_RUN"))

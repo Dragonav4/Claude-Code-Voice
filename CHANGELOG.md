@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Repository conventions, ADRs, Taskfile, CI and issue/PR templates (#1).
 - Secret scanning in CI (gitleaks) and `.gitignore` rules for local state (#5).
 - Linux and Windows support: platform layer for locks, processes, players and system voices; `bin/run.sh` picks a working Python; CI on ubuntu, windows and macos (#4).
+- Settings from `.env` files in `~/.claude/voice-personas/` and the plugin folder, with `.env.example` listing every variable (#8).
 - ElevenLabs audio tags ([laughs], [sighs], [sarcastic], ...) in spoken lines on eleven_v3/v4 models; removed for other models and the system voice (#13).
 
 ### Changed

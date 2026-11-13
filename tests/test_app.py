@@ -151,7 +151,9 @@ class EntrypointTest(support.TempHomeTest):
         result = self.run_bin(
             "on_speak.py", json.dumps({"session_id": "x", "transcript_path": str(path)})
         )
-        self.assertEqual((result.returncode, result.stdout), (0, "[dry-run:warrior] В бой\n"))
+        self.assertEqual(
+            (result.returncode, result.stdout), (0, "[dry-run:warrior] В бой\n"), result.stderr
+        )
 
     def test_garbage_input_never_fails(self):
         for name in ("on_speak.py", "on_prompt.py", "on_notify.py", "worker.py"):
@@ -164,7 +166,7 @@ class EntrypointTest(support.TempHomeTest):
 
     def test_ctl(self):
         result = self.run_bin("ctl.py", "", "persona", "list")
-        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("warrior", result.stdout)
 
 

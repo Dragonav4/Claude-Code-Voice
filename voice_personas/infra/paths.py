@@ -6,6 +6,14 @@ from pathlib import Path
 PLUGIN_ROOT = Path(__file__).resolve().parents[2]
 
 
+def default_home():
+    """~/.claude/voice-personas, resolved lazily.
+
+    Path.home() raises on Windows when USERPROFILE is missing, so never call it at import time.
+    """
+    return Path.home() / ".claude" / "voice-personas"
+
+
 @dataclass(frozen=True)
 class Paths:
     home: Path  # ~/.claude/voice-personas
@@ -13,8 +21,8 @@ class Paths:
 
     @classmethod
     def from_env(cls, env):
-        home = env.get("VOICE_PERSONAS_HOME") or Path.home() / ".claude" / "voice-personas"
-        return cls(home=Path(home))
+        home = env.get("VOICE_PERSONAS_HOME") or default_home()
+        return cls(home=Path(home).expanduser())
 
     @property
     def state_file(self):
