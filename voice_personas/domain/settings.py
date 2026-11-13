@@ -51,6 +51,7 @@ class Settings:
     notifications: bool = True  # voice permission / idle notifications
     duck_music: bool = False  # lower Music.app volume while speaking
     duck_volume: int = 20  # Music.app volume while ducked
+    max_lines_per_turn: int = 5  # spoken lines per turn, in any narration mode
     cache_mb: int = 50  # phrase cache size
 
     @classmethod
@@ -75,6 +76,9 @@ class Settings:
             notifications=_flag(config.get("notifications"), d.notifications),
             duck_music=_flag(config.get("duck_music"), d.duck_music),
             duck_volume=_number(config.get("duck_volume"), d.duck_volume, 0, 100),
+            max_lines_per_turn=_number(
+                config.get("max_lines_per_turn"), d.max_lines_per_turn, 1, 20
+            ),
             cache_mb=_number(config.get("cache_mb"), d.cache_mb, 0, 1000),
         )
 
