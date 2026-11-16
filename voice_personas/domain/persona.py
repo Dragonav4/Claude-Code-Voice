@@ -9,8 +9,8 @@ FRONTMATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n?(.*)\Z", re.S)
 
 DEFAULT_PHRASES = MappingProxyType(
     {
-        "permission": "Нужно твоё разрешение.",
-        "idle": "Я закончил и жду тебя.",
+        "permission": "I need your permission.",
+        "idle": "Done. Waiting for you.",
     }
 )
 
@@ -50,6 +50,7 @@ class Persona:
     description: str = ""
     prompt: str = ""
     voice_id: str | None = None
+    aliases: tuple = ()
     phrases: MappingProxyType = field(default_factory=lambda: MappingProxyType({}))
 
     @classmethod
@@ -61,8 +62,16 @@ class Persona:
             description=meta.get("description", ""),
             prompt=body,
             voice_id=meta.get("voice_id") or None,
+            aliases=tuple(
+                a.strip().lower() for a in meta.get("aliases", "").split(",") if a.strip()
+            ),
             phrases=MappingProxyType(phrases),
         )
+
+    def answers_to(self, name):
+        """The file name or one of the aliases, case-insensitive."""
+        name = name.strip().lower()
+        return name == self.name or name in self.aliases
 
     def phrase(self, kind):
         return self.phrases.get(kind) or DEFAULT_PHRASES[kind]

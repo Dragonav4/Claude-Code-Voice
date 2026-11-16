@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""/persona and /voice commands.
+"""/persona and /narrate commands.
 
-ctl.py persona [list|<name>|off]
-ctl.py voice [on|off|status|stop|test]
+ctl.py persona [list|<name>|on|off]
+ctl.py narrate [on|off|status|stop|test|mode]
 """
 
 import sys

@@ -88,7 +88,7 @@ class PersonaTest(unittest.TestCase):
             (p.description, p.prompt, p.voice_id), ("Воин", "You are a warrior.", None)
         )
         self.assertEqual(p.phrase("idle"), "Жду приказа.")
-        self.assertEqual(p.phrase("permission"), "Нужно твоё разрешение.")
+        self.assertEqual(p.phrase("permission"), "I need your permission.")
 
     def test_without_frontmatter(self):
         self.assertEqual(Persona.parse("x", "  just text  ").prompt, "just text")

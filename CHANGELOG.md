@@ -7,10 +7,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- `/persona on` brings back the last persona; personas answer to aliases from their frontmatter, so `/persona цундере` works (#23).
 - `/voice mode end` speaks only one line at the end of a turn; `max_lines_per_turn` caps spoken lines per turn in any mode (#3).
 
 ### Changed
 
+- `/voice` is now `/narrate`: Claude Code's built-in `/voice` shadowed it (#23).
+- Plugin messages, command descriptions and manifests are in English; persona files stay Russian (#23).
 - The full persona is sent once per session and after every change, other prompts get a one-line reminder; a SessionStart hook resends it after /clear and compaction (#18).
 
 ## [0.4.0] - 2026-11-13

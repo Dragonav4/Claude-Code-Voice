@@ -85,4 +85,4 @@ class CommandTest(support.TempHomeTest):
         self.assertEqual(run_command(app, ["voice", "mode", "end"])[0], 0)
         self.assertEqual(app.store.load_state().narration, "end")
         self.assertEqual(run_command(app, ["voice", "mode", "loud"])[0], 1)
-        self.assertIn("в конце хода", run_command(app, ["voice", "status"])[1])
+        self.assertIn("end of turn", run_command(app, ["voice", "status"])[1])
