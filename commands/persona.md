@@ -1,6 +1,6 @@
 ---
-description: Выбрать персону Claude (цундере, воин, ...) или показать список
-argument-hint: [имя | list | off]
+description: Pick a persona for Claude (tsundere, warrior, ...) or list them
+argument-hint: [name | list | on | off]
 ---
 Run exactly this command with the Bash tool and show its output to the user unchanged. Add nothing else.
 

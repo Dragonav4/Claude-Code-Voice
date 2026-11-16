@@ -109,8 +109,10 @@ class ControlTest(support.TempHomeTest):
     def test_persona_and_voice(self):
         app = self.app()
         self.assertEqual(run_command(app, ["persona", "Butler"])[0], 0)
-        self.assertEqual(run_command(app, ["voice", "off"]), (0, "Озвучка: выкл."))
-        self.assertEqual(app.store.load_state(), State("butler", voice=False))
+        self.assertEqual(run_command(app, ["voice", "off"]), (0, "Narration: off."))
+        self.assertEqual(
+            app.store.load_state(), State("butler", voice=False, last_persona="butler")
+        )
 
     def test_unknown_persona_and_command(self):
         app = self.app()
@@ -126,7 +128,7 @@ class ControlTest(support.TempHomeTest):
 
     def test_status_mentions_key_state(self):
         text = run_command(self.app(), ["voice", "status"])[1]
-        self.assertIn("ElevenLabs API key: НЕ найден", text)
+        self.assertIn("ElevenLabs API key: NOT found", text)
 
 
 class EntrypointTest(support.TempHomeTest):

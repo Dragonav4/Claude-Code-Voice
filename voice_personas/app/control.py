@@ -1,24 +1,29 @@
-"""/persona and /voice commands. Each returns (exit code, text for the user)."""
+"""/persona and /narrate commands. Each returns (exit code, text for the user)."""
 
-TEST_PHRASE = "Проверка связи. Голос на месте."
-VOICE_USAGE = "Используй: /voice on | off | status | stop | test [текст] | mode all|end"
-MODE_NAMES = {"all": "каждый шаг", "end": "только в конце хода"}
+TEST_PHRASE = "Voice check. Can you hear me?"
+VOICE_USAGE = "Usage: /narrate on | off | status | stop | test [text] | mode all|end"
+MODE_NAMES = {"all": "every step", "end": "end of turn only"}
 PERSONA_OFF = ("off", "none", "reset")
+NEXT_MESSAGE = "Takes effect from the next message."
 
 
 def _yes_no(flag):
-    return "да" if flag else "нет"
+    return "yes" if flag else "no"
+
+
+def _on_off(flag):
+    return "on" if flag else "off"
 
 
 def list_personas(app):
     state = app.store.load_state()
-    lines = ["Доступные персоны:"]
+    lines = ["Personas:"]
     for name, persona in app.personas.all().items():
-        mark = " (активна)" if state.persona == name else ""
+        mark = " (active)" if state.persona == name else ""
         lines.append(f"- {name}{mark}: {persona.description}")
     if state.persona is None:
-        lines.append("Сейчас: без персоны.")
-    lines.append("Выбрать: /persona <имя>, выключить: /persona off")
+        lines.append("Now: no persona.")
+    lines.append("Use: /persona <name>, turn off: /persona off, bring back: /persona on")
     return 0, "\n".join(lines)
 
 
@@ -29,12 +34,27 @@ def persona_command(app, arg):
     state = app.store.load_state()
     if name in PERSONA_OFF:
         app.store.save_state(state.with_persona(None))
-        return 0, "Персона выключена."
+        return 0, "Persona off."
+    if name == "on":
+        return restore_persona(app, state)
     available = app.personas.all()
-    if name not in available:
-        return 1, f"Нет персоны '{name}'. Доступно: {', '.join(available)}"
+    persona = next((p for p in available.values() if p.answers_to(name)), None)
+    if persona is None:
+        return 1, f"No persona '{name}'. Available: {', '.join(available)}"
+    return select_persona(app, state, persona.name)
+
+
+def select_persona(app, state, name):
     app.store.save_state(state.with_persona(name))
-    return 0, f"Персона: {name}. Применится со следующего сообщения."
+    return 0, f"Persona: {name}. {NEXT_MESSAGE}"
+
+
+def restore_persona(app, state):
+    if state.persona:
+        return 0, f"Persona {state.persona} is already on."
+    if app.personas.get(state.last_persona) is None:
+        return 1, "No persona was selected yet: /persona <name>"
+    return select_persona(app, state, state.last_persona)
 
 
 def status_text(app):
@@ -43,19 +63,19 @@ def status_text(app):
     voice_id = s.voice_for(app.personas.get(state.persona))
     return "\n".join(
         [
-            f"Персона: {state.persona or 'нет'}",
-            f"Озвучка: {'вкл' if state.voice else 'выкл'}",
-            f"Режим озвучки: {MODE_NAMES[state.narration]}, "
-            f"не больше {s.max_lines_per_turn} реплик за ход",
-            f"ElevenLabs API key: {'найден' if s.api_key else 'НЕ найден'}",
-            f"Voice ID: {voice_id or 'НЕ задан'}",
-            f"Модель: {s.model_id}, скорость {s.rate}, громкость {s.volume}",
-            f"Запасной голос: {s.fallback} ({s.fallback_voice or 'по языку реплики'})",
-            f"Обрыв речи новым сообщением: {_yes_no(s.interrupt_on_prompt)}",
-            f"Голосовые уведомления: {_yes_no(s.notifications)}",
-            f"Приглушение Music: {_yes_no(s.duck_music)}",
-            f"Лог ошибок озвучки: {app.paths.log_file}",
-            f"Конфиг: {app.paths.config_file}",
+            f"Persona: {state.persona or 'none'}",
+            f"Narration: {_on_off(state.voice)}",
+            f"Narration mode: {MODE_NAMES[state.narration]}, "
+            f"at most {s.max_lines_per_turn} lines per turn",
+            f"ElevenLabs API key: {'found' if s.api_key else 'NOT found'}",
+            f"Voice ID: {voice_id or 'NOT set'}",
+            f"Model: {s.model_id}, rate {s.rate}, volume {s.volume}",
+            f"Fallback voice: {s.fallback} ({s.fallback_voice or 'by line language'})",
+            f"New prompt cuts off speech: {_yes_no(s.interrupt_on_prompt)}",
+            f"Voice notifications: {_yes_no(s.notifications)}",
+            f"Duck Music: {_yes_no(s.duck_music)}",
+            f"Error log: {app.paths.log_file}",
+            f"Config: {app.paths.config_file}",
         ]
     )
 
@@ -63,16 +83,16 @@ def status_text(app):
 def send_test_phrase(app, text):
     state = app.store.load_state()
     if not state.speaking:
-        return 1, "Сначала выбери персону и включи озвучку: /persona <имя>, /voice on"
+        return 1, "Pick a persona and turn narration on first: /persona <name>, /narrate on"
     app.queue.enqueue(state.persona, [text.strip() or TEST_PHRASE])
-    return 0, "Тестовая фраза отправлена. Тишина — смотри лог из /voice status."
+    return 0, "Test line sent. Silence? Check the log from /narrate status."
 
 
 def set_mode(app, mode):
     if mode not in MODE_NAMES:
-        return 1, "Используй: /voice mode all (каждый шаг) | end (только в конце хода)"
+        return 1, "Usage: /narrate mode all (every step) | end (end of turn only)"
     app.store.save_state(app.store.load_state().with_narration(mode))
-    return 0, f"Режим озвучки: {MODE_NAMES[mode]}. Применится со следующего сообщения."
+    return 0, f"Narration mode: {MODE_NAMES[mode]}. {NEXT_MESSAGE}"
 
 
 def voice_command(app, arg):
@@ -81,7 +101,7 @@ def voice_command(app, arg):
     if command in ("", "status"):
         return 0, status_text(app)
     if command == "stop":
-        return 0, f"Остановлено реплик: {app.queue.stop_all()}."
+        return 0, f"Lines stopped: {app.queue.stop_all()}."
     if command == "test":
         return send_test_phrase(app, rest)
     if command == "mode":
@@ -89,15 +109,18 @@ def voice_command(app, arg):
     if command not in ("on", "off"):
         return 1, VOICE_USAGE
     app.store.save_state(app.store.load_state().with_voice(command == "on"))
-    return 0, f"Озвучка: {'вкл' if command == 'on' else 'выкл'}."
+    return 0, f"Narration: {command}."
 
 
 COMMANDS = {
     "persona": persona_command,
-    "voice": voice_command,
+    "narrate": voice_command,
+    "voice": voice_command,  # commands/voice.md of plugin versions before 0.5
     "status": lambda app, _: (0, status_text(app)),
 }
-USAGE = "Использование: ctl.py persona [list|<имя>|off] | voice [on|off|status|stop|test] | status"
+USAGE = (
+    "Usage: ctl.py persona [list|<name>|on|off] | narrate [on|off|status|stop|test|mode] | status"
+)
 
 
 def run_command(app, argv):

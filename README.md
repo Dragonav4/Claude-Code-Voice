@@ -52,7 +52,7 @@ Restart Claude Code, then run:
 
 ```
 /persona warrior
-/voice test
+/narrate test
 ```
 
 ## Commands
@@ -62,12 +62,13 @@ Restart Claude Code, then run:
 | `/persona list` | List the available personas |
 | `/persona <name>` | Use a persona, starting from the next message |
 | `/persona off` | Turn the persona off |
-| `/voice on`, `/voice off` | Turn speech on or off |
-| `/voice stop` | Stop the current speech |
-| `/voice mode end` | Speak only one line at the end of each turn (quieter and cheaper) |
-| `/voice mode all` | Speak before tool calls and at the end of the turn (default) |
-| `/voice test [text]` | Speak a test line |
-| `/voice status` | Show the key, voice, settings and log location |
+| `/persona on` | Bring back the last persona |
+| `/narrate on`, `/narrate off` | Turn speech on or off |
+| `/narrate stop` | Stop the current speech |
+| `/narrate mode end` | Speak only one line at the end of each turn (quieter and cheaper) |
+| `/narrate mode all` | Speak before tool calls and at the end of the turn (default) |
+| `/narrate test [text]` | Speak a test line |
+| `/narrate status` | Show the key, voice, settings and log location |
 
 ## Configuration
 
@@ -116,6 +117,7 @@ description: One-line description shown in /persona list
 voice_id: ELEVENLABS_VOICE_ID
 say_permission: Phrase spoken when Claude asks for permission
 say_idle: Phrase spoken when Claude is waiting for you
+aliases: Other names for /persona, comma-separated
 ---
 ```
 
@@ -130,7 +132,7 @@ Design decisions are recorded in [`docs/adr`](docs/adr).
 
 ## Troubleshooting
 
-- Run `/voice status` to check whether the key and voice ID are found.
+- Run `/narrate status` to check whether the key and voice ID are found.
 - Errors are logged to `~/.claude/voice-personas/speak.log` (for example, a missing audio player).
 - Set `VOICE_PERSONAS_DRY_RUN=1` to print lines instead of speaking them.
 

@@ -5,7 +5,7 @@
 - `.claude-plugin/` -- plugin manifest (`plugin.json`) and a marketplace served from this folder (`marketplace.json`).
 - `.github/` -- CI, dependabot, PR and issue templates.
 - `bin/` -- entry points: hooks, the `ctl.py` command and `run.sh`, which picks a working Python. Wiring only, no logic.
-- `commands/` -- the `/persona` and `/voice` slash commands.
+- `commands/` -- the `/persona` and `/narrate` slash commands.
 - `docs/adr/` -- architecture decision records.
 - `hooks/hooks.json` -- which hooks Claude Code calls and which `bin/*.py` handles each one.
 - `personas/` -- built-in personas.
@@ -39,7 +39,7 @@ Boundary check: `rg "infra" voice_personas/app --glob '!container.py' --glob '!r
 - Files under 200 lines, functions under 50. Magic numbers become named constants at the top of the module.
 - Hooks never crash Claude Code: errors go to `speak.log`, the exit code is always 0.
 - Everything coming from outside (stdin JSON, `config.json`, the transcript) is validated at the boundary. Garbage falls back to defaults.
-- Code, comments, docs and persona prompts are in English. User-facing strings (command output, spoken phrases, example lines in personas) stay in Russian.
+- Everything is in English: code, comments, docs, command output, manifests. Only persona files keep Russian example lines, phrases and aliases. `tests/test_commands.py` checks this.
 - Style is enforced by `ruff` (config in `pyproject.toml`).
 
 ## Tests

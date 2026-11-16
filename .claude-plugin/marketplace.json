@@ -1,14 +1,14 @@
 {
   "name": "claude-code-voice",
-  "description": "Персоны и голос для Claude Code",
+  "description": "Personas and a voice for Claude Code",
   "owner": {
-    "name": "Даня"
+    "name": "Dragonav4"
   },
   "plugins": [
     {
       "name": "voice-personas",
       "source": "./",
-      "description": "Персоны ответов + озвучка через ElevenLabs"
+      "description": "Reply personas, spoken through ElevenLabs"
     }
   ]
 }

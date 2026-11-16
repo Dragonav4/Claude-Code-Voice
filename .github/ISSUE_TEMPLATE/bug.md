@@ -16,5 +16,5 @@ labels: bug
 
 - OS:
 - Python (`python3 --version`):
-- `/voice status` output:
+- `/narrate status` output:
 - Last lines of `~/.claude/voice-personas/speak.log`:

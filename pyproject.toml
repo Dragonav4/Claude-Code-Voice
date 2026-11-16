@@ -1,4 +1,4 @@
-# Плагин не устанавливается как пакет: этот файл — только конфиг инструментов.
+# The plugin is not installed as a package: this file only configures tools.
 
 [tool.ruff]
 line-length = 100
